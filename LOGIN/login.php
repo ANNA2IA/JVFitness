@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: ../MENU/menu.php");
             exit();
         } else {
-            $mensaje = "Usuario o contraseña malos.<br>";
+            $mensaje = "Usuario o contraseña incorrecto.<br>";
         }
 
         $stmt->close();
