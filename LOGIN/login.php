@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
         $conexion->close();
     } else {
-        $mensaje = "Por favor, completa todos los inputs.<Br>";
+        $mensaje = "Por favor, completa todos los campos.<Br>";
     }
 }
 ?>
