@@ -1,33 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-    <title>Login</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+  <title>Login</title>
 </head>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 <body>
-    <div class="wrapper">
-       <form action="">
-            <h1>Login</h1>
-            <div class="input-box">
-                <input type="text" placeholder="Usuario" required>
-                <i class='bx bxs-user'></i>
-            </div>
-            <div class="input-box">
-                <input type="cpntraseya" placeholder="Contraseña" required>
-                  <i class='bx bxs-lock-alt'></i>
-            </div>
-            <div class="remember-forgot">
-                <label><input type="checkbox">Recordar</label>
-            </div>
-            <button type="submit" class="button">Login</button>
-        </form>
-    </div>
+  <div class="wrapper">
+    <form action="login.php" method="POST">
+      <h1>Login</h1>
+      <div class="input-box">
+        <input type="text" name="usuario" placeholder="Usuario">
+        <i class='bx bxs-user'></i>
+      </div>
+      <div class="input-box">
+        <input type="password" name="contrasena" placeholder="Contraseña" >
+        <i class='bx bxs-lock-alt'></i>
+      </div>
+      <div> 
+         <label type="text" name="lbl"></label>
+      </div>
+     
+      <div class="remember-forgot">
+        <label><input type="checkbox">Recordar</label>
+      </div>
+      <button type="submit" name="login" class="button">Login</button>
+    </form>
+  </div>
 </body>
 </html>

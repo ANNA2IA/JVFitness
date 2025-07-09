@@ -98,3 +98,12 @@ body {
 .wrapper .button:hover {
   background: #ddd;
 }
+
+.error-message {
+  color: #b00020;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 8px 0;
+  font-weight: bold;
+  text-align: center;
+}
