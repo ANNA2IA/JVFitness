@@ -3,15 +3,15 @@ create database JV ;
 use JV;
 
 CREATE TABLE Administradores (
-    codigoA INT AUTO_INCREMENT PRIMARY KEY,
+    codigoA VARCHAR(5) ,
     Nombres VARCHAR(100),
     Apellidos VARCHAR(100),
-    Usuario VARCHAR(100),
+    Usuario VARCHAR(100) PRIMARY KEY,
     Contrasenya VARCHAR(20)
 );
 
 CREATE TABLE Clientes (
-    codigoC INT AUTO_INCREMENT PRIMARY KEY,
+    codigoC VARCHAR(5) PRIMARY KEY,
     Nombres VARCHAR(100),
     Apellidos VARCHAR(100),
     Fecha_Nac VARCHAR(100),
@@ -21,7 +21,7 @@ CREATE TABLE Clientes (
 );
 
 CREATE TABLE Promociones (
-    codigoP INT AUTO_INCREMENT PRIMARY KEY,
+    codigoP VARCHAR(5) PRIMARY KEY,
     Nombres VARCHAR(100),
     Precio VARCHAR(100),
     Fecha_Ini VARCHAR(100),
@@ -30,17 +30,17 @@ CREATE TABLE Promociones (
 );
 
 CREATE TABLE Planes (
-    codigoPL INT AUTO_INCREMENT PRIMARY KEY,
+    codigoPL VARCHAR(5) PRIMARY KEY,
     Nombres VARCHAR(100),
     Duracion VARCHAR(100),
     Precio VARCHAR(100)
 );
 
 CREATE TABLE Membresias (
-    codigo INT AUTO_INCREMENT PRIMARY KEY,
-    codigoC INT,
-   codigoP  INT,
-   codigoPL INT,
+    codigo VARCHAR(5) PRIMARY KEY,
+    codigoC VARCHAR(5),
+   codigoP  VARCHAR(5),
+   codigoPL VARCHAR(5),
    Fecha_Ini VARCHAR(20),
     Fecha_Fin VARCHAR(20),
     Precio VARCHAR(800),
@@ -49,3 +49,6 @@ CREATE TABLE Membresias (
     FOREIGN KEY (codigoP) REFERENCES Promociones(codigoP),
     FOREIGN KEY (codigoPL) REFERENCES Planes(codigoPL)
 );
+
+insert into Administradores values ('A0001','Shantall', 'Alegria','Shanty','info3ia');
+select * from Administradores;
