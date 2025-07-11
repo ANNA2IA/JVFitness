@@ -1,7 +1,8 @@
+@ -0,0 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+     <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login</title>
   
@@ -13,8 +14,7 @@
   
 </head>
 <body>
-
-<?php
+        <?php
 session_start();
 
 $mensaje = "";
@@ -24,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $contrasena = $_POST['contrasena'] ?? '';
 
     if (!empty($usuario) && !empty($contrasena)) {
+        $conexion = new mysqli("localhost", "root", "admin123", "JV");
         if ($conexion->connect_error) {
             die("Error de conexión: " . $conexion->connect_error);
         }
@@ -38,20 +39,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($resultado->num_rows === 1) {
             $_SESSION['usuario'] = $usuario;
-            header("Location: ../MENU/index.php");
+               header("Location: ../MENU/index.php");
             exit();
         } else {
-            $mensaje = "Usuario o contraseña incorrecto.<br>";
+            $mensaje = "Usuario o contraseña incorrectos.<br>";
         }
-
         $stmt->close();
         $conexion->close();
     } else {
         $mensaje = "Por favor, completa todos los campos.<Br>";
     }
 }
-?>
 
+?>
 <div class="wrapper">
   <form action="login.php" method="POST">
     <h1>Login</h1>
