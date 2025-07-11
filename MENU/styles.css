@@ -1,67 +1,189 @@
+/* Asegura que body no tenga margen y header esté fijo arriba */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background-color: #111;
-  color: #FFA500;
+  background-color: #1e1e1e;
+  color: white;
 }
 
+/* Header con estilo fijo y fondo */
 header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #111;
+  color: orange;
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  z-index: 1001;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+/* Ícono hamburguesa grande y a la izquierda */
+#menu-toggle {
+  font-size: 30px;
+  cursor: pointer;
+  margin-right: 20px;
+  user-select: none;
+}
+
+/* Lado izquierdo del menú */
+#sidebar {
+  position: fixed;
+  top: 0;
+  left: -220px;
+  width: 220px;
+  height: 100%;
   background-color: #222;
-  padding: 20px;
-  text-align: center;
-  font-size: 2em;
+  transition: left 0.3s ease;
+  z-index: 1000;
+  padding-top: 60px;
+}
+
+#sidebar.visible {
+  left: 0;
+}
+
+/* Menú lateral */
+#sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#sidebar li {
+  padding: 15px 20px;
+  cursor: pointer;
+  color: orange;
   font-weight: bold;
 }
 
-.container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-  padding: 20px;
-}
-
-.card {
-  background-color: #1c1c1c;
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 4px 8px rgba(255, 165, 0, 0.2);
-}
-
-.card h2 {
-  margin-top: 0;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 8px;
-  border-radius: 8px;
-  border: none;
+#sidebar li:hover {
   background-color: #333;
-  color: #fff;
 }
 
-.buttons {
+main {
+  margin-top: 80px; /* para que no se esconda detrás del header */
+  padding: 20px;
+}
+
+.formulario {
+  display: none;
+  background: #222;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 15px #000;
+}
+
+.formulario.activo {
+  display: block;
+}
+
+input {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.botones {
   display: flex;
-  flex-wrap: wrap;
   gap: 10px;
 }
 
-.buttons button {
-  flex: 1;
-  padding: 10px;
-  background-color: #FFA500;
-  color: #111;
+button {
+  padding: 10px 15px;
+  background: orange;
   border: none;
-  border-radius: 8px;
+  border-radius: 5px;
   cursor: pointer;
+  color: black;
   font-weight: bold;
-  transition: 0.3s;
 }
 
-.buttons button:hover {
-  background-color: #ff8c00;
+button:hover {
+  background: #ff9900;
+}
+/* HEADER Y HAMBURGUESA */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #111;
+  color: orange;
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  z-index: 1001;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+#menu-toggle {
+  font-size: 28px;
+  cursor: pointer;
+  user-select: none;
+  margin-right: 15px;
+  margin-left: 5px; /* bien pegado a la izquierda */
+}
+
+/* MENÚ LATERAL */
+#sidebar {
+  position: fixed;
+  top: 0;
+  left: -220px;
+  width: 220px;
+  height: 100%;
+  background-color: #222;
+  transition: left 0.3s ease;
+  z-index: 1000;
+  padding-top: 60px;
+}
+
+#sidebar.visible {
+  left: 0;
+}
+
+#sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#sidebar li {
+  padding: 15px 20px;
+  cursor: pointer;
+  color: orange;
+  font-weight: bold;
+}
+
+#sidebar li:hover {
+  background-color: #333;
+}
+
+/* MAIN Y FORMULARIOS */
+main {
+  margin-top: 80px; /* para no tapar el header */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.formulario {
+  display: none;
+  background: #222;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 15px #000;
+}
+
+.formulario.activo {
+  display: block;
 }
