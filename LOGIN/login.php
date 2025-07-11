@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $contrasena = $_POST['contrasena'] ?? '';
 
     if (!empty($usuario) && !empty($contrasena)) {
-        $conexion = new mysqli("localhost", "root", "admin123", "JV");
+        $conexion = new mysqli("localhost", "root", "", "JV");
         if ($conexion->connect_error) {
             die("Error de conexión: " . $conexion->connect_error);
         }
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($resultado->num_rows === 1) {
             $_SESSION['usuario'] = $usuario;
-            header("Location: ../MENU/menu.php");
+            header("Location: ../MENU/index.html");
             exit();
         } else {
             $mensaje = "Usuario o contraseña incorrecto.<br>";
