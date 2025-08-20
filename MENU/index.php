@@ -111,6 +111,7 @@ $seccion = $_GET['seccion'] ?? 'clientes';
 }
 
 
+
    .fab-options {
   position: absolute;
   bottom: 70px;

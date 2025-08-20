@@ -45,6 +45,7 @@ CREATE TABLE Membresias (
     Fecha_Fin VARCHAR(20),
     Precio VARCHAR(800),
     metodo VARCHAR(100),
+    
     FOREIGN KEY (codigoC) REFERENCES Clientes(codigoC),
     FOREIGN KEY (codigoP) REFERENCES Promociones(codigoP),
     FOREIGN KEY (codigoPL) REFERENCES Planes(codigoPL)
@@ -52,3 +53,4 @@ CREATE TABLE Membresias (
 
 insert into Administradores values ('A0001','Shantall', 'Alegria','Shanty','info3ia');
 select * from Administradores;
+select * from Clientes;
