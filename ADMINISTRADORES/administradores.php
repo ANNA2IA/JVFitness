@@ -15,6 +15,7 @@ $mensaje = "";
 
 //  Ingresar
 if (isset($_POST['Ingresar'])) {
+     $mensaje = "Administrador ingresado con éxito.";
     $verificar = $conexion->prepare("SELECT Usuario FROM Administradores WHERE Usuario = ?");
     $verificar->bind_param("s", $usuario);
     $verificar->execute();
@@ -37,6 +38,7 @@ if (isset($_POST['Ingresar'])) {
 
 //  Modificar
 if (isset($_POST['Modificar'])) {
+    $mensaje = "Administrador modificado con éxito.";
     $stmt = $conexion->prepare("UPDATE Administradores SET codigoA=?, Nombres=?, Apellidos=?, Contrasenya=? WHERE Usuario=?");
     $stmt->bind_param("sssss", $codigoA, $nombres, $apellidos, $contrasena, $usuario);
     if ($stmt->execute()) {
@@ -49,6 +51,7 @@ if (isset($_POST['Modificar'])) {
 
 //  Eliminar
 if (isset($_POST['Eliminar'])) {
+     $mensaje = "Administrador eliminado con éxito.";
     $stmt = $conexion->prepare("DELETE FROM Administradores WHERE Usuario=?");
     $stmt->bind_param("s", $usuario);
     if ($stmt->execute()) {
@@ -218,164 +221,6 @@ $conexion->close();
     </div>
 </body>
 </html>
-<?php
-$conexion = new mysqli("localhost", "root", "admin123", "JV");
 
-if ($conexion->connect_error) {
-    die("Conexión fallida: " . $conexion->connect_error);
-}
-
-$codigoA = $_POST['codigoA'] ?? '';
-$nombres = $_POST['Nombres'] ?? '';
-$apellidos = $_POST['Apellidos'] ?? '';
-$usuario = $_POST['Usuario'] ?? '';
-$contrasena = $_POST['Contrasena'] ?? '';
-
-$mensaje = "";
-
-//  Ingresar
-if (isset($_POST['Ingresar'])) {
-    $verificar = $conexion->prepare("SELECT Usuario FROM Administradores WHERE Usuario = ?");
-    $verificar->bind_param("s", $usuario);
-    $verificar->execute();
-    $verificar->store_result();
-
-    if ($verificar->num_rows > 0) {
-        $mensaje = "Error: El usuario '$usuario' ya existe.";
-    } else {
-        $stmt = $conexion->prepare("INSERT INTO Administradores (codigoA, Nombres, Apellidos, Usuario, Contrasenya) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssss", $codigoA, $nombres, $apellidos, $usuario, $contrasena);
-        if ($stmt->execute()) {
-            $mensaje = "Administrador ingresado con éxito.";
-        } else {
-            $mensaje = "Error al ingresar: " . $stmt->error;
-        }
-        $stmt->close();
-    }
-    $verificar->close();
-}
-
-//  Modificar
-if (isset($_POST['Modificar'])) {
-    $stmt = $conexion->prepare("UPDATE Administradores SET codigoA=?, Nombres=?, Apellidos=?, Contrasenya=? WHERE Usuario=?");
-    $stmt->bind_param("sssss", $codigoA, $nombres, $apellidos, $contrasena, $usuario);
-    if ($stmt->execute()) {
-        $mensaje = "Administrador modificado con éxito.";
-    } else {
-        $mensaje = "Error al modificar: " . $stmt->error;
-    }
-    $stmt->close();
-}
-
-//  Eliminar
-if (isset($_POST['Eliminar'])) {
-    $stmt = $conexion->prepare("DELETE FROM Administradores WHERE Usuario=?");
-    $stmt->bind_param("s", $usuario);
-    if ($stmt->execute()) {
-        $mensaje = "Administrador eliminado con éxito.";
-    } else {
-        $mensaje = "Error al eliminar: " . $stmt->error;
-    }
-    $stmt->close();
-}
-
-//  Buscar
-if (isset($_POST['Buscar'])) {
-    $stmt = $conexion->prepare("SELECT * FROM Administradores WHERE Usuario=?");
-    $stmt->bind_param("s", $usuario);
-    $stmt->execute();
-    $resultado = $stmt->get_result();
-    if ($fila = $resultado->fetch_assoc()) {
-        $mensaje = "Código: " . $fila['codigoA'] . "<br>Nombre: " . $fila['Nombres'] . "<br>Apellido: " . $fila['Apellidos'] . "<br>Usuario: " . $fila['Usuario'];
-    } else {
-        $mensaje = "No se encontró el administrador.";
-    }
-    $stmt->close();
-}
-
-// Obtener todos los administradores
-$resultado_admins = $conexion->query("SELECT * FROM Administradores");
-
-$conexion->close();
-
-$conexion = new mysqli("localhost", "root", "admin123", "JV");
-
-if ($conexion->connect_error) {
-    die("Conexión fallida: " . $conexion->connect_error);
-}
-
-$codigoA = $_POST['codigoA'] ?? '';
-$nombres = $_POST['Nombres'] ?? '';
-$apellidos = $_POST['Apellidos'] ?? '';
-$usuario = $_POST['Usuario'] ?? '';
-$contrasena = $_POST['Contrasena'] ?? '';
-
-$mensaje = "";
-
-//  Ingresar
-if (isset($_POST['Ingresar'])) {
-    $verificar = $conexion->prepare("SELECT Usuario FROM Administradores WHERE Usuario = ?");
-    $verificar->bind_param("s", $usuario);
-    $verificar->execute();
-    $verificar->store_result();
-
-    if ($verificar->num_rows > 0) {
-        $mensaje = "Error: El usuario '$usuario' ya existe.";
-    } else {
-        $stmt = $conexion->prepare("INSERT INTO Administradores (codigoA, Nombres, Apellidos, Usuario, Contrasenya) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssss", $codigoA, $nombres, $apellidos, $usuario, $contrasena);
-        if ($stmt->execute()) {
-            $mensaje = "Administrador ingresado con éxito.";
-        } else {
-            $mensaje = "Error al ingresar: " . $stmt->error;
-        }
-        $stmt->close();
-    }
-    $verificar->close();
-}
-
-//  Modificar
-if (isset($_POST['Modificar'])) {
-    $stmt = $conexion->prepare("UPDATE Administradores SET codigoA=?, Nombres=?, Apellidos=?, Contrasenya=? WHERE Usuario=?");
-    $stmt->bind_param("sssss", $codigoA, $nombres, $apellidos, $contrasena, $usuario);
-    if ($stmt->execute()) {
-        $mensaje = "Administrador modificado con éxito.";
-    } else {
-        $mensaje = "Error al modificar: " . $stmt->error;
-    }
-    $stmt->close();
-}
-
-//  Eliminar
-if (isset($_POST['Eliminar'])) {
-    $stmt = $conexion->prepare("DELETE FROM Administradores WHERE Usuario=?");
-    $stmt->bind_param("s", $usuario);
-    if ($stmt->execute()) {
-        $mensaje = "Administrador eliminado con éxito.";
-    } else {
-        $mensaje = "Error al eliminar: " . $stmt->error;
-    }
-    $stmt->close();
-}
-
-//  Buscar
-if (isset($_POST['Buscar'])) {
-    $stmt = $conexion->prepare("SELECT * FROM Administradores WHERE Usuario=?");
-    $stmt->bind_param("s", $usuario);
-    $stmt->execute();
-    $resultado = $stmt->get_result();
-    if ($fila = $resultado->fetch_assoc()) {
-        $mensaje = "Código: " . $fila['codigoA'] . "<br>Nombre: " . $fila['Nombres'] . "<br>Apellido: " . $fila['Apellidos'] . "<br>Usuario: " . $fila['Usuario'];
-    } else {
-        $mensaje = "No se encontró el administrador.";
-    }
-    $stmt->close();
-}
-
-// Obtener todos los administradores
-$resultado_admins = $conexion->query("SELECT * FROM Administradores");
-
-$conexion->close();
-?>
 
 
