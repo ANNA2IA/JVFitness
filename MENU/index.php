@@ -157,7 +157,7 @@ $seccion = $_GET['seccion'] ?? 'clientes';
 
   <div id="form-clientes">
     <h2>Formulario de Clientes</h2>
-    <form method="POST" action="menu.php">
+     <form method="POST" action="../CLIENTES/clientes.php">
       <input type="text" name="codigoC" placeholder="Código" required>
       <input type="text" name="Nombres" placeholder="Nombres" required>
       <input type="text" name="Apellidos" placeholder="Apellidos" required>
@@ -176,7 +176,7 @@ $seccion = $_GET['seccion'] ?? 'clientes';
 
   <div id="form-planes">
     <h2>Formulario de Planes</h2>
-    <form method="POST" action="menu.php">
+      <form method="POST" action="../PLANES/planes.php">
       <input type="text" name="codigoPL" placeholder="Código del plan" required>
       <input type="text" name="Nombres" placeholder="Nombre del plan" required>
       <input type="text" name="Duracion" placeholder="Duración (ej: 30 días)" required>
@@ -191,7 +191,7 @@ $seccion = $_GET['seccion'] ?? 'clientes';
 
   <div id="form-promociones">
     <h2>Formulario de Promociones</h2>
-    <form method="POST" action="menu.php">
+   <form method="POST" action="../PROMOCIONES/promociones.php">
       <input type="text" name="codigoP" placeholder="Código de promoción" required>
       <input type="text" name="Nombres" placeholder="Nombre de promoción" required>
       <input type="text" name="Precio" placeholder="Precio" required>
