@@ -41,7 +41,7 @@ $seccion = $_GET['seccion'] ?? 'clientes';
 
     h2 {
       color: orange;
-      margin-top: 20px;
+      margin-top: 50px;
       font-size: 32px;
     }
 
@@ -51,7 +51,7 @@ $seccion = $_GET['seccion'] ?? 'clientes';
       border-radius: 8px;
       box-shadow: 0 0 15px #000;
       max-width: 600px;
-      width: 90%;
+      width: 100%;
       margin-bottom: 50px;
     }
 
@@ -165,11 +165,11 @@ $seccion = $_GET['seccion'] ?? 'clientes';
       <input type="text" name="Telefono" placeholder="Teléfono" required>
       <input type="text" name="Registro" placeholder="Fecha de registro" required>
       <input type="hidden" name="tipo" value="cliente">
-      <input type="hidden" name="accion" value="ingresar">
-      <button type="submit">Ingresar</button>
-      <button type="submit">Modificar</button>
-      <button type="submit">Eliminar</button>
-      <button type="submit">Buscar</button>
+      <button type="submit" name="Ingresar">Insertar</button>
+      <button type="submit" name="Modificar">Modificar</button>
+      <button type="submit" name="Eliminar">Eliminar</button>
+      <button type="submit" name="Buscar">Buscar</button>
+
     </form>
   </div>
 
@@ -181,11 +181,10 @@ $seccion = $_GET['seccion'] ?? 'clientes';
       <input type="text" name="Duracion" placeholder="Duración (ej: 30 días)" required>
       <input type="text" name="Precio" placeholder="Precio" required>
       <input type="hidden" name="tipo" value="plan">
-      <input type="hidden" name="accion" value="ingresar">
-      <button type="submit">Ingresar</button>
-      <button type="submit">Modificar</button>
-      <button type="submit">Eliminar</button>
-      <button type="submit">Buscar</button>
+      <button type="submit" name="Ingresar">Insertar</button>
+      <button type="submit" name="Modificar">Modificar</button>
+      <button type="submit" name="Eliminar">Eliminar</button>
+      <button type="submit" name="Buscar">Buscar</button>
     </form>
   </div>
 
@@ -199,28 +198,26 @@ $seccion = $_GET['seccion'] ?? 'clientes';
       <input type="date" name="Fecha_Fin" placeholder="Fecha Fin" required>
       <input type="text" name="Descripcion" placeholder="Descripción" required>
       <input type="hidden" name="tipo" value="promocion">
-      <input type="hidden" name="accion" value="ingresar">
-      <button type="submit">Ingresar</button>
-      <button type="submit">Modificar</button>
-      <button type="submit">Eliminar</button>
-      <button type="submit">Buscar</button>
+       <button type="submit" name="Ingresar">Insertar</button>
+      <button type="submit" name="Modificar">Modificar</button>
+      <button type="submit" name="Eliminar">Eliminar</button>
+      <button type="submit" name="Buscar">Buscar</button>
     </form>
   </div>
 
   <div id="form-administradores">
     <h2>Formulario de Administradores</h2>
-    <form method="POST" action="menu.php">
+    <form method="POST" action="../ADMINISTRADORES/administradores.php">
       <input type="text" name="codigoA" placeholder="Código" required>
       <input type="text" name="Nombres" placeholder="Nombres" required>
       <input type="text" name="Apellidos" placeholder="Apellidos" required>
       <input type="text" name="Usuario" placeholder="Usuario" required>
       <input type="password" name="Contrasena" placeholder="Contraseña" required>
       <input type="hidden" name="tipo" value="admin">
-      <input type="hidden" name="accion" value="ingresar">
-      <button type="submit">Ingresar</button>
-      <button type="submit">Modificar</button>
-      <button type="submit">Eliminar</button>
-      <button type="submit">Buscar</button>
+       <button type="submit" name="Ingresar">Insertar</button>
+      <button type="submit" name="Modificar">Modificar</button>
+      <button type="submit" name="Eliminar">Eliminar</button>
+      <button type="submit" name="Buscar">Buscar</button>
     </form>
   </div>
 
