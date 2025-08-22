@@ -5,7 +5,6 @@ if ($conexion->connect_error) {
     die("Conexión fallida: " . $conexion->connect_error);
 }
 
-// Variables para el frontend
 $mensaje = "";
 $resultado_clientes = $conexion->query("SELECT * FROM Clientes");
 
@@ -18,49 +17,73 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST['tipo'] == 'cliente') {
     $telefono  = $_POST['Telefono'] ?? '';
     $registro  = $_POST['Registro'] ?? '';
 
+    // ===== INSERTAR =====
     if (isset($_POST['Ingresar'])) {
-        $sql = "INSERT INTO Clientes (codigoC, Nombres, Apellidos, Fecha_Nac, Correo, Telefono, Registro)
-                VALUES ('$codigoC', '$nombres', '$apellidos', '$fechaNac', '$correo', '$telefono', '$registro')";
-        $mensaje = ($conexion->query($sql) === TRUE) 
-            ? "Cliente insertado correctamente." 
-            : "Error: " . $conexion->error;
-    }
-
-    if (isset($_POST['Modificar'])) {
-        $sql = "UPDATE Clientes SET 
-                    Nombres='$nombres',
-                    Apellidos='$apellidos',
-                    Fecha_Nac='$fechaNac',
-                    Correo='$correo',
-                    Telefono='$telefono',
-                    Registro='$registro'
-                WHERE codigoC='$codigoC'";
-        $mensaje = ($conexion->query($sql) === TRUE) 
-            ? "Cliente modificado correctamente." 
-            : "Error: " . $conexion->error;
-    }
-
-    if (isset($_POST['Eliminar'])) {
-        $sql = "DELETE FROM Clientes WHERE codigoC='$codigoC'";
-        $mensaje = ($conexion->query($sql) === TRUE) 
-            ? "Cliente eliminado correctamente." 
-            : "Error: " . $conexion->error;
-    }
-
-    if (isset($_POST['Buscar'])) {
-        $sql = "SELECT * FROM Clientes WHERE codigoC='$codigoC'";
-        $resultado = $conexion->query($sql);
-        if ($resultado->num_rows > 0) {
-            $row = $resultado->fetch_assoc();
-            $mensaje = "Cliente encontrado:<br>
-                        Nombre: " . $row['Nombres'] . " " . $row['Apellidos'] . "<br>
-                        Correo: " . $row['Correo'] . "<br>
-                        Teléfono: " . $row['Telefono'];
+        if ($codigoC == "" || $nombres == "" || $apellidos == "" || $fechaNac == "" || $correo == "" || $telefono == "" || $registro == "") {
+            $mensaje = "⚠️ Debes llenar todos los campos para insertar un cliente.";
         } else {
-            $mensaje = "No se encontró cliente con ese código.";
+            $sql = "INSERT INTO Clientes (codigoC, Nombres, Apellidos, Fecha_Nac, Correo, Telefono, Registro)
+                    VALUES ('$codigoC', '$nombres', '$apellidos', '$fechaNac', '$correo', '$telefono', '$registro')";
+            $mensaje = ($conexion->query($sql) === TRUE) 
+                ? "✅ Cliente insertado correctamente." 
+                : "❌ Error al insertar: " . $conexion->error;
         }
     }
 
+    // ===== MODIFICAR =====
+    if (isset($_POST['Modificar'])) {
+        if ($codigoC == "" || $nombres == "") {
+            $mensaje = "⚠️ Debes ingresar el Código y los datos a modificar.";
+        } else {
+            $sql = "UPDATE Clientes SET 
+                        Nombres='$nombres',
+                        Apellidos='$apellidos',
+                        Fecha_Nac='$fechaNac',
+                        Correo='$correo',
+                        Telefono='$telefono',
+                        Registro='$registro'
+                    WHERE codigoC='$codigoC'";
+            $mensaje = ($conexion->query($sql) === TRUE) 
+                ? "✅ Cliente modificado correctamente." 
+                : "❌ Error al modificar: " . $conexion->error;
+        }
+    }
+
+    // ===== ELIMINAR =====
+    if (isset($_POST['Eliminar'])) {
+        if ($codigoC == "") {
+            $mensaje = "⚠️ Debes ingresar el Código para eliminar.";
+        } else {
+            $sql = "DELETE FROM Clientes WHERE codigoC='$codigoC'";
+            $mensaje = ($conexion->query($sql) === TRUE) 
+                ? "✅ Cliente eliminado correctamente." 
+                : "❌ Error al eliminar: " . $conexion->error;
+        }
+    }
+
+    // ===== BUSCAR =====
+    if (isset($_POST['Buscar'])) {
+        if ($codigoC == "" && $nombres == "") {
+            $mensaje = "⚠️ Ingresa el Código o el Nombre para realizar la búsqueda.";
+        } else {
+            $sql = "SELECT * FROM Clientes WHERE codigoC='$codigoC' OR Nombres LIKE '%$nombres%'";
+            $resultado = $conexion->query($sql);
+            if ($resultado->num_rows > 0) {
+                $row = $resultado->fetch_assoc();
+                $mensaje = "🔎 Cliente encontrado:<br>
+                            Código: " . $row['codigoC'] . "<br>
+                            Nombre: " . $row['Nombres'] . " " . $row['Apellidos'] . "<br>
+                            Fecha Nac: " . $row['Fecha_Nac'] . "<br>
+                            Correo: " . $row['Correo'] . "<br>
+                            Teléfono: " . $row['Telefono'] . "<br>
+                            Registro: " . $row['Registro'];
+            } else {
+                $mensaje = "❌ No se encontró cliente con esos datos.";
+            }
+        }
+    }
+
+    // Refrescar tabla
     $resultado_clientes = $conexion->query("SELECT * FROM Clientes");
 }
 

@@ -15,65 +15,94 @@ $mensaje = "";
 
 //  Ingresar
 if (isset($_POST['Ingresar'])) {
-     $mensaje = "Administrador ingresado con éxito.";
-    $verificar = $conexion->prepare("SELECT Usuario FROM Administradores WHERE Usuario = ?");
-    $verificar->bind_param("s", $usuario);
-    $verificar->execute();
-    $verificar->store_result();
+    if (!empty($codigoA) && !empty($nombres) && !empty($apellidos) && !empty($usuario) && !empty($contrasena)) {
+        $verificar = $conexion->prepare("SELECT Usuario FROM Administradores WHERE Usuario = ?");
+        $verificar->bind_param("s", $usuario);
+        $verificar->execute();
+        $verificar->store_result();
 
-    if ($verificar->num_rows > 0) {
-        $mensaje = "Error: El usuario '$usuario' ya existe.";
-    } else {
-        $stmt = $conexion->prepare("INSERT INTO Administradores (codigoA, Nombres, Apellidos, Usuario, Contrasenya) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssss", $codigoA, $nombres, $apellidos, $usuario, $contrasena);
-        if ($stmt->execute()) {
-            $mensaje = "Administrador ingresado con éxito.";
+        if ($verificar->num_rows > 0) {
+            $mensaje = "❌ Error: El usuario '$usuario' ya existe.";
         } else {
-            $mensaje = "Error al ingresar: " . $stmt->error;
+            $stmt = $conexion->prepare("INSERT INTO Administradores (codigoA, Nombres, Apellidos, Usuario, Contrasenya) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssss", $codigoA, $nombres, $apellidos, $usuario, $contrasena);
+            if ($stmt->execute()) {
+                $mensaje = "✅ Administrador ingresado con éxito.";
+            } else {
+                $mensaje = "❌ Error al ingresar: " . $stmt->error;
+            }
+            $stmt->close();
         }
-        $stmt->close();
+        $verificar->close();
+    } else {
+        $mensaje = "⚠️ Debes llenar todos los campos para insertar un administrador.";
     }
-    $verificar->close();
 }
 
 //  Modificar
 if (isset($_POST['Modificar'])) {
-    $mensaje = "Administrador modificado con éxito.";
-    $stmt = $conexion->prepare("UPDATE Administradores SET codigoA=?, Nombres=?, Apellidos=?, Contrasenya=? WHERE Usuario=?");
-    $stmt->bind_param("sssss", $codigoA, $nombres, $apellidos, $contrasena, $usuario);
-    if ($stmt->execute()) {
-        $mensaje = "Administrador modificado con éxito.";
+    if (!empty($codigoA) && !empty($nombres) && !empty($apellidos) && !empty($usuario) && !empty($contrasena)) {
+        $stmt = $conexion->prepare("UPDATE Administradores SET codigoA=?, Nombres=?, Apellidos=?, Contrasenya=? WHERE Usuario=?");
+        $stmt->bind_param("sssss", $codigoA, $nombres, $apellidos, $contrasena, $usuario);
+        if ($stmt->execute()) {
+            $mensaje = "✅ Administrador modificado con éxito.";
+        } else {
+            $mensaje = "❌ Error al modificar: " . $stmt->error;
+        }
+        $stmt->close();
     } else {
-        $mensaje = "Error al modificar: " . $stmt->error;
+        $mensaje = "⚠️ Debes llenar todos los campos para modificar un administrador.";
     }
-    $stmt->close();
 }
 
 //  Eliminar
 if (isset($_POST['Eliminar'])) {
-     $mensaje = "Administrador eliminado con éxito.";
-    $stmt = $conexion->prepare("DELETE FROM Administradores WHERE Usuario=?");
-    $stmt->bind_param("s", $usuario);
-    if ($stmt->execute()) {
-        $mensaje = "Administrador eliminado con éxito.";
+    if (!empty($usuario) || !empty($codigoA)) {
+        if (!empty($usuario)) {
+            $stmt = $conexion->prepare("DELETE FROM Administradores WHERE Usuario=?");
+            $stmt->bind_param("s", $usuario);
+        } else {
+            $stmt = $conexion->prepare("DELETE FROM Administradores WHERE codigoA=?");
+            $stmt->bind_param("s", $codigoA);
+        }
+
+        if ($stmt->execute()) {
+            $mensaje = "✅ Administrador eliminado con éxito.";
+        } else {
+            $mensaje = "❌ Error al eliminar: " . $stmt->error;
+        }
+        $stmt->close();
     } else {
-        $mensaje = "Error al eliminar: " . $stmt->error;
+        $mensaje = "⚠️ Debes ingresar el Código o el Usuario para eliminar.";
     }
-    $stmt->close();
 }
 
 //  Buscar
 if (isset($_POST['Buscar'])) {
-    $stmt = $conexion->prepare("SELECT * FROM Administradores WHERE Usuario=?");
-    $stmt->bind_param("s", $usuario);
-    $stmt->execute();
-    $resultado = $stmt->get_result();
-    if ($fila = $resultado->fetch_assoc()) {
-        $mensaje = "Código: " . $fila['codigoA'] . "<br>Nombre: " . $fila['Nombres'] . "<br>Apellido: " . $fila['Apellidos'] . "<br>Usuario: " . $fila['Usuario'];
+    if (!empty($usuario) || !empty($codigoA)) {
+        if (!empty($usuario)) {
+            $stmt = $conexion->prepare("SELECT * FROM Administradores WHERE Usuario=?");
+            $stmt->bind_param("s", $usuario);
+        } else {
+            $stmt = $conexion->prepare("SELECT * FROM Administradores WHERE codigoA=?");
+            $stmt->bind_param("s", $codigoA);
+        }
+
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        if ($fila = $resultado->fetch_assoc()) {
+            $mensaje = "✅ Administrador encontrado:<br>" .
+                       "Código: " . $fila['codigoA'] . "<br>" .
+                       "Nombre: " . $fila['Nombres'] . "<br>" .
+                       "Apellido: " . $fila['Apellidos'] . "<br>" .
+                       "Usuario: " . $fila['Usuario'];
+        } else {
+            $mensaje = "⚠️ No se encontró el administrador.";
+        }
+        $stmt->close();
     } else {
-        $mensaje = "No se encontró el administrador.";
+        $mensaje = "⚠️ Ingresa al menos el Código o el Usuario para buscar.";
     }
-    $stmt->close();
 }
 
 // Obtener todos los administradores

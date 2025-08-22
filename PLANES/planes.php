@@ -5,7 +5,6 @@ if ($conexion->connect_error) {
     die("Conexión fallida: " . $conexion->connect_error);
 }
 
-// Variables para mostrar mensajes y lista
 $mensaje = "";
 $resultado_planes = $conexion->query("SELECT * FROM Planes");
 
@@ -15,51 +14,83 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST['tipo'] == 'plan') {
     $duracion = $_POST['Duracion'] ?? '';
     $precio   = $_POST['Precio'] ?? '';
 
+    // ===== INSERTAR =====
     if (isset($_POST['Ingresar'])) {
-        $sql = "INSERT INTO Planes (codigoPL, Nombres, Duracion, Precio)
-                VALUES ('$codigoPL', '$nombres', '$duracion', '$precio')";
-        $mensaje = ($conexion->query($sql) === TRUE)
-            ? "Plan insertado correctamente."
-            : "Error: " . $conexion->error;
-    }
-
-    if (isset($_POST['Modificar'])) {
-        $sql = "UPDATE Planes SET 
-                    Nombres='$nombres',
-                    Duracion='$duracion',
-                    Precio='$precio'
-                WHERE codigoPL='$codigoPL'";
-        $mensaje = ($conexion->query($sql) === TRUE)
-            ? "Plan modificado correctamente."
-            : "Error: " . $conexion->error;
-    }
-
-    if (isset($_POST['Eliminar'])) {
-        $sql = "DELETE FROM Planes WHERE codigoPL='$codigoPL'";
-        $mensaje = ($conexion->query($sql) === TRUE)
-            ? "Plan eliminado correctamente."
-            : "Error: " . $conexion->error;
-    }
-
-    if (isset($_POST['Buscar'])) {
-        $sql = "SELECT * FROM Planes WHERE codigoPL='$codigoPL'";
-        $resultado = $conexion->query($sql);
-        if ($resultado->num_rows > 0) {
-            $row = $resultado->fetch_assoc();
-            $mensaje = "Planes:<br>
-                        Nombre: " . $row['Nombres'] . "<br>
-                        Duración: " . $row['Duracion'] . "<br>
-                        Precio: $" . $row['Precio'];
+        if ($codigoPL == "" || $nombres == "" || $duracion == "" || $precio == "") {
+            $mensaje = "⚠️ Debes llenar todos los campos para insertar un plan.";
         } else {
-            $mensaje = "No se encontró un plan con ese código.";
+            $sql = "INSERT INTO Planes (codigoPL, Nombres, Duracion, Precio)
+                    VALUES ('$codigoPL', '$nombres', '$duracion', '$precio')";
+            $mensaje = ($conexion->query($sql) === TRUE) 
+                ? "✅ Plan insertado correctamente." 
+                : "❌ Error al insertar: " . $conexion->error;
         }
     }
 
-    $resultado_planes = $conexion->query("SELECT * FROM Planes"); // Actualizar tabla
+    // ===== MODIFICAR =====
+    if (isset($_POST['Modificar'])) {
+        if ($codigoPL == "" || $nombres == "") {
+            $mensaje = "⚠️ Debes ingresar al menos el Código y el Nombre para modificar.";
+        } else {
+            $sql = "UPDATE Planes SET 
+                        Nombres='$nombres',
+                        Duracion='$duracion',
+                        Precio='$precio'
+                    WHERE codigoPL='$codigoPL'";
+            $mensaje = ($conexion->query($sql) === TRUE) 
+                ? "✅ Plan modificado correctamente." 
+                : "❌ Error al modificar: " . $conexion->error;
+        }
+    }
+
+    // ===== ELIMINAR =====
+    if (isset($_POST['Eliminar'])) {
+        if ($codigoPL == "") {
+            $mensaje = "⚠️ Debes ingresar el Código del plan para eliminar.";
+        } else {
+            $sql = "DELETE FROM Planes WHERE codigoPL='$codigoPL'";
+            $mensaje = ($conexion->query($sql) === TRUE) 
+                ? "✅ Plan eliminado correctamente." 
+                : "❌ Error al eliminar: " . $conexion->error;
+        }
+    }
+
+    // ===== BUSCAR =====
+    if (isset($_POST['Buscar'])) {
+        if ($codigoPL == "" && $nombres == "") {
+            $mensaje = "⚠️ Ingresa el Código o el Nombre para realizar la búsqueda.";
+        } else {
+            // Construir la consulta según los campos que estén llenos
+            if ($codigoPL != "" && $nombres != "") {
+                $sql = "SELECT * FROM Planes WHERE codigoPL='$codigoPL' OR Nombres LIKE '%$nombres%'";
+            } elseif ($codigoPL != "") {
+                $sql = "SELECT * FROM Planes WHERE codigoPL='$codigoPL'";
+            } else { // solo nombre
+                $sql = "SELECT * FROM Planes WHERE Nombres LIKE '%$nombres%'";
+            }
+
+            $resultado = $conexion->query($sql);
+            if ($resultado->num_rows > 0) {
+                $row = $resultado->fetch_assoc();
+                $mensaje = "🔎 Plan encontrado:<br>
+                            Código: " . $row['codigoPL'] . "<br>
+                            Nombre: " . $row['Nombres'] . "<br>
+                            Duración: " . $row['Duracion'] . "<br>
+                            Precio: $" . $row['Precio'];
+            } else {
+                $mensaje = "❌ No se encontró plan con esos datos.";
+            }
+        }
+    }
+
+    // Refrescar tabla
+    $resultado_planes = $conexion->query("SELECT * FROM Planes");
 }
 
 $conexion->close();
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="es">
