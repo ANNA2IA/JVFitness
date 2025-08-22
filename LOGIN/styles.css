@@ -9,101 +9,119 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* altura total de pantalla */
-  background-image: url('imagenes/cholo.png'); 
-  background-size: cover; /* hace que la imagen cubra todo */
-  background-repeat: no-repeat; /* no se repite */
-  background-position: center; /* centrada */
-  background-attachment: fixed; /* (opcional) fondo fijo al hacer scroll */
+  height: 100vh;
+  background: url('imagenes/cholo.png') no-repeat center center fixed;
+  background-size: cover;
 }
 
-.wrapper {
-  width: 400px; /* ya no usamos 420% */
-  background: rgba(0, 0, 0, 0.5); /* fondo semitransparente */
-  color: white;
-  border-radius: 10px;
-  padding: 30px 40px;
-  text-align: center; /* centra textos y elementos */
-}
-
-.wrapper h1 {
-  font-size: 36px;
-  margin-bottom: 20px;
-}
-
-.wrapper .input-box {
-  position: relative;
-  margin: 20px 0;
+.container {
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 0 25px rgba(255, 165, 0, 0.3);
   width: 100%;
-  height: 50px;
+  max-width: 400px;
+  text-align: center;
+}
+
+.login-box h2 {
+  color: #FFA500;
+  margin-bottom: 30px;
+  font-size: 32px;
+}
+
+.input-box {
+  position: relative;
+  margin-bottom: 25px;
 }
 
 .input-box input {
   width: 100%;
-  height: 100%;
-  background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  border-radius: 40px;
+  padding: 14px 18px 14px 45px;
+  border: none;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
   font-size: 16px;
-  color: white;
-  padding: 0 20px;
-}
-
-.input-box input::placeholder {
-  color: white;
+  outline: none;
 }
 
 .input-box i {
   position: absolute;
-  right: 20px;
   top: 50%;
+  left: 15px;
   transform: translateY(-50%);
+  color:#ff6600;;
   font-size: 20px;
 }
 
-.remember-forgot {
+.input-box input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.remember {
   display: flex;
-  justify-content: space-between;
-  font-size: 14.5px;
-  margin: -10px 0 20px;
-}
-
-.remember-forgot label input {
-  accent-color: white;
-  margin-right: 5px;
-}
-
-.remember-forgot a {
+  align-items: center;
   color: white;
-  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 20px;
 }
 
-.remember-forgot a:hover {
-  text-decoration: underline;
+.remember input {
+  margin-right: 10px;
+  accent-color:#ff6600;;
 }
 
-.wrapper .button {
+.btn {
   width: 100%;
-  height: 45px;
-  background: white;
+  padding: 14px;
+  background: linear-gradient(to right, #FFA500, #ff6600);
   border: none;
-  border-radius: 40px;
-  cursor: pointer;
+  border-radius: 50px;
   font-size: 16px;
-  color: #333;
-  font-weight: 600;
-  transition: background 0.3s;
-}
-
-.wrapper .button:hover {
-  background: #ddd;
-}
-
-.error-message {
-  color: #b00020;
-  border-radius: 8px;
-  padding: 8px;
-  margin: 8px 0;
   font-weight: bold;
-  text-align: center;
+  color: #000;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(255, 165, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+}
+
+/* Mensaje de error */
+.error-message {
+  background: rgba(255, 60, 60, 0.2);
+  border-left: 4px solid #ff4d4d;
+  color: #ff4d4d;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-start;
+  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.2);
+  animation: slideFadeIn 0.4s ease forwards;
+  backdrop-filter: blur(6px);
+}
+
+.error-message::before {
+  content: "⚠️";
+  font-size: 18px;
+}
+
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

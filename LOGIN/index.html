@@ -1,36 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css">
 </head>
 <body>
-  <div class="wrapper">
-    <form action="../LOGIN/login.php" method="POST">
-      <h1>Login</h1>
-      <div class="input-box">
-        <input type="text" name="usuario" placeholder="Usuario">
-        <i class='bx bxs-user'></i>
-      </div>
-      <div class="input-box">
-        <input type="password" name="contrasena" placeholder="Contraseña" >
-        <i class='bx bxs-lock-alt'></i>
-      </div>
-      <div> 
-         <label type="text" name="lbl"></label>
-      </div>
-     
-      <div class="remember-forgot">
-        <label><input type="checkbox">Recordar</label>
-      </div>
-      <button type="submit" name="login" class="button">Login</button>
-    </form>
+  <div class="container">
+    <div class="login-box">
+      <h2>Bienvenido</h2>
+      <form action="login.php" method="POST">
+        <div class="input-box">
+          <i class='bx bxs-user'></i>
+          <input type="text" name="usuario" placeholder="Usuario" required />
+        </div>
+
+        <div class="input-box">
+          <i class='bx bxs-lock-alt'></i>
+          <input type="password" name="contrasena" placeholder="Contraseña" required />
+        </div>
+
+        <div class="remember">
+          <label><input type="checkbox" /> Recordar</label>
+        </div>
+
+        <button type="submit" class="btn">Login</button>
+      </form>
+    </div>
   </div>
 </body>
 </html>
