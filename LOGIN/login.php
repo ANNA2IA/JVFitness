@@ -54,16 +54,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <form action="login.php" method="POST">
         <div class="input-box">
           <i class='bx bxs-user'></i>
-          <input type="text" name="usuario" placeholder="Usuario" value="<?php echo htmlspecialchars($usuario ?? ''); ?>" required />
+          <input type="text" name="usuario" placeholder="Usuario" value="<?php echo htmlspecialchars($usuario ?? ''); ?>"  />
         </div>
 
         <div class="input-box">
           <i class='bx bxs-lock-alt'></i>
-          <input type="password" name="contrasena" placeholder="Contraseña" required />
-        </div>
-
-        <div class="remember">
-          <label><input type="checkbox" /> Recordar</label>
+          <input type="password" name="contrasena" placeholder="Contraseña"  />
         </div>
 
      <?php if ($mensaje): ?>

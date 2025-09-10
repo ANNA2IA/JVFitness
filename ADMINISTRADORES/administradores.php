@@ -1,4 +1,7 @@
 <?php
+
+include("../LOGIN/seguridad.php");
+
 $conexion = new mysqli("localhost", "root", "admin123", "JV");
 
 if ($conexion->connect_error) {

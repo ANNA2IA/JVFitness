@@ -1,4 +1,7 @@
 <?php
+
+include("../seguridad.php");
+
 $servername = "localhost";
 $username = "root"; 
 $password = "admin123"; 
@@ -284,13 +287,13 @@ $conn->close();
   <div id="form-clientes" class="form-container">
     <h2>Formulario de Clientes</h2>
     <form method="POST" action="../CLIENTES/clientes.php">
-      <input type="text" name="codigoC" placeholder="Código" required>
-      <input type="text" name="Nombres" placeholder="Nombres" required>
-      <input type="text" name="Apellidos" placeholder="Apellidos" required>
-      <input type="date" name="Fecha_Nac" placeholder="Fecha de nacimiento" required>
-      <input type="email" name="correo" placeholder="Correo" required>
-      <input type="text" name="Telefono" placeholder="Teléfono" required>
-      <input type="text" name="Registro" placeholder="Fecha de registro" required>
+      <input type="text" name="codigoC" placeholder="Código" >
+      <input type="text" name="Nombres" placeholder="Nombres" >
+      <input type="text" name="Apellidos" placeholder="Apellidos" >
+      <input type="date" name="Fecha_Nac" placeholder="Fecha de nacimiento" >
+      <input type="email" name="correo" placeholder="Correo" >
+      <input type="text" name="Telefono" placeholder="Teléfono" >
+      <input type="text" name="Registro" placeholder="Fecha de registro" >
       <input type="hidden" name="tipo" value="cliente">
       <div class="form-actions">
         <button type="submit" name="Ingresar">Insertar</button>
@@ -304,13 +307,13 @@ $conn->close();
   <div id="form-membresias" class="form-container">
     <h2>Formulario de Membresías</h2>
     <form method="POST" action="../MEMBRESIAS/membresias.php">
-      <input type="text" name="codigo" placeholder="Código de Membresía" required>
-      <input type="text" name="codigoC" placeholder="Código del Cliente" required>
-      <input type="text" name="codigoPL" placeholder="Código del Plan" required>
-      <input type="date" name="Fecha_Ini" placeholder="Fecha de Inicio" required>
-      <input type="date" name="Fecha_Fin" placeholder="Fecha de Vencimiento" required>
-      <input type="text" name="Precio" placeholder="Precio" required>
-      <input type="text" name="metodo" placeholder="Método de pago" required>
+      <input type="text" name="codigo" placeholder="Código de Membresía" >
+      <input type="text" name="codigoC" placeholder="Código del Cliente" >
+      <input type="text" name="codigoPL" placeholder="Código del Plan" >
+      <input type="date" name="Fecha_Ini" placeholder="Fecha de Inicio" >
+      <input type="date" name="Fecha_Fin" placeholder="Fecha de Vencimiento" >
+      <input type="text" name="Precio" placeholder="Precio" >
+      <input type="text" name="metodo" placeholder="Método de pago" >
       <input type="hidden" name="tipo" value="membresia">
       <div class="form-actions">
         <button type="submit" name="Ingresar">Insertar</button>
@@ -324,10 +327,10 @@ $conn->close();
   <div id="form-planes" class="form-container">
     <h2>Formulario de Planes</h2>
     <form method="POST" action="../PLANES/planes.php">
-      <input type="text" name="codigoPL" placeholder="Código del plan" required>
-      <input type="text" name="Nombres" placeholder="Nombre del plan" required>
-      <input type="text" name="Duracion" placeholder="Duración (ej: 30 días)" required>
-      <input type="text" name="Precio" placeholder="Precio" required>
+      <input type="text" name="codigoPL" placeholder="Código del plan" >
+      <input type="text" name="Nombres" placeholder="Nombre del plan" >
+      <input type="text" name="Duracion" placeholder="Duración (ej: 30 días)" >
+      <input type="text" name="Precio" placeholder="Precio" >
       <input type="hidden" name="tipo" value="plan">
       <div class="form-actions">
         <button type="submit" name="Ingresar">Insertar</button>
@@ -341,12 +344,12 @@ $conn->close();
   <div id="form-promociones" class="form-container">
     <h2>Formulario de Promociones</h2>
     <form method="POST" action="../PROMOCIONES/promociones.php">
-      <input type="text" name="codigoP" placeholder="Código de promoción" required>
-      <input type="text" name="Nombres" placeholder="Nombre de promoción" required>
-      <input type="text" name="Precio" placeholder="Precio" required>
-      <input type="date" name="Fecha_Ini" placeholder="Fecha Inicio" required>
-      <input type="date" name="Fecha_Fin" placeholder="Fecha Fin" required>
-      <input type="text" name="Descripcion" placeholder="Descripción" required>
+      <input type="text" name="codigoP" placeholder="Código de promoción" >
+      <input type="text" name="Nombres" placeholder="Nombre de promoción" >
+      <input type="text" name="Precio" placeholder="Precio" >
+      <input type="date" name="Fecha_Ini" placeholder="Fecha Inicio" >
+      <input type="date" name="Fecha_Fin" placeholder="Fecha Fin" >
+      <input type="text" name="Descripcion" placeholder="Descripción" >
       <input type="hidden" name="tipo" value="promocion">
       <div class="form-actions">
         <button type="submit" name="Ingresar">Insertar</button>
@@ -360,11 +363,11 @@ $conn->close();
   <div id="form-administradores" class="form-container">
     <h2>Formulario de Administradores</h2>
     <form method="POST" action="../ADMINISTRADORES/administradores.php">
-      <input type="text" name="codigoA" placeholder="Código" required>
-      <input type="text" name="Nombres" placeholder="Nombres" required>
-      <input type="text" name="Apellidos" placeholder="Apellidos" required>
-      <input type="text" name="Usuario" placeholder="Usuario" required>
-      <input type="password" name="Contrasena" placeholder="Contraseña" required>
+      <input type="text" name="codigoA" placeholder="Código" >
+      <input type="text" name="Nombres" placeholder="Nombres" >
+      <input type="text" name="Apellidos" placeholder="Apellidos" >
+      <input type="text" name="Usuario" placeholder="Usuario" >
+      <input type="password" name="Contrasena" placeholder="Contraseña" >
       <input type="hidden" name="tipo" value="admin">
       <div class="form-actions">
         <button type="submit" name="Ingresar">Insertar</button>
@@ -385,7 +388,8 @@ $conn->close();
     <a href="#" data-target="planes"><i class="fas fa-dumbbell"></i> Planes</a>
     <a href="#" data-target="promociones"><i class="fas fa-tag"></i> Promociones</a>
     <a href="#" data-target="administradores"><i class="fas fa-user-shield"></i> Administradores</a>
-    <a href="#" id="cerrar-sesion"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+    <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+
   </div>
 </div>
 

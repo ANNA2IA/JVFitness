@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST['tipo'] == 'plan') {
     $codigoPL = $_POST['codigoPL'] ?? '';
     $nombres  = $_POST['Nombres'] ?? '';
     $duracion = $_POST['Duracion'] ?? '';
-    $precio   = $_POST['Precio'] ?? '';
+    $precio   = $_POST['Precio'] ?? ''; 
 
     // ===== INSERTAR =====
     if (isset($_POST['Ingresar'])) {
