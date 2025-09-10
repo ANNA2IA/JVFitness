@@ -1,6 +1,17 @@
 <?php
-$conexion = new mysqli("localhost", "root", "admin123", "JV");
 
+// Habilitar errores para ver problemas en local
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Requerir PHPMailer
+require '../PHPMailer/src/PHPMailer.php';
+require '../PHPMailer/src/SMTP.php';
+require '../PHPMailer/src/Exception.php';
+
+
+$conexion = new mysqli("localhost", "root", "admin123", "JV");
 if ($conexion->connect_error) {
     die("Conexión fallida: " . $conexion->connect_error);
 }
@@ -24,9 +35,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST['tipo'] == 'cliente') {
         } else {
             $sql = "INSERT INTO Clientes (codigoC, Nombres, Apellidos, Fecha_Nac, Correo, Telefono, Registro)
                     VALUES ('$codigoC', '$nombres', '$apellidos', '$fechaNac', '$correo', '$telefono', '$registro')";
-            $mensaje = ($conexion->query($sql) === TRUE) 
-                ? "✅ Cliente insertado correctamente." 
-                : "❌ Error al insertar: " . $conexion->error;
+            if ($conexion->query($sql) === TRUE) {
+                $mensaje = "✅ Cliente insertado correctamente.";
+
+                // ===== ENVIAR RECIBO POR CORREO =====
+                enviarRecibo($correo, $nombres, $apellidos, $registro);
+            } else {
+                $mensaje = "❌ Error al insertar: " . $conexion->error;
+            }
         }
     }
 
@@ -88,7 +104,51 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST['tipo'] == 'cliente') {
 }
 
 $conexion->close();
+
+// ================== FUNCION DE ENVIO DE CORREO ==================
+function enviarRecibo($correo, $nombre, $apellido, $registro) {
+    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+
+    try {
+        // Configuración SMTP Gmail
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'trabinfofinal25@gmail.com'; // tu correo Gmail
+        $mail->Password = 'invy orda zsrb zkcr'; // clave de aplicación
+        $mail->SMTPSecure = 'tls';
+        $mail->Port = 587;
+
+        // Remitente y destinatario
+        $mail->setFrom('trabinfofinal25@gmail.com', 'Gimnasio JV');
+        $mail->addAddress($correo, "$nombre $apellido");
+
+        // Contenido
+        $mail->isHTML(true);
+        $mail->Subject = "Recibo de Registro - Gimnasio JV";
+
+        $fechaPago = date("Y-m-d");
+        $fechaVencimiento = date("Y-m-d", strtotime("+1 month")); // ejemplo: membresía por 1 mes
+
+        $mail->Body = "
+            <h2>Hola $nombre $apellido 👋</h2>
+            <p>¡Gracias por registrarte en <b>Gimnasio JVCenter</b>!</p>
+            <p><b>Se registro el día:</b> $registro</p>
+            <p><b>Fecha de Pago:</b> $fechaPago</p>
+            <p><b>Fecha de Vencimiento:</b> $fechaVencimiento</p>
+            <p><b>Monto:</b> $20.00 </p>
+            <br>
+            <p>💪 Mantente motivado y sigue entrenando fuerte para alcanzar tus metas.</p>
+            <p>¡Nos vemos en el gimnasio! 🚀</p>
+        ";
+
+        $mail->send();
+    } catch (Exception $e) {
+        error_log("Error al enviar correo a $correo: " . $mail->ErrorInfo);
+    }
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">

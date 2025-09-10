@@ -293,7 +293,7 @@ $conn->close();
       <input type="date" name="Fecha_Nac" placeholder="Fecha de nacimiento" >
       <input type="email" name="correo" placeholder="Correo" >
       <input type="text" name="Telefono" placeholder="Teléfono" >
-      <input type="text" name="Registro" placeholder="Fecha de registro" >
+      <input type="date" name="Registro" placeholder="Fecha de Pago" >
       <input type="hidden" name="tipo" value="cliente">
       <div class="form-actions">
         <button type="submit" name="Ingresar">Insertar</button>
