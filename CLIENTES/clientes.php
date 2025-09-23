@@ -10,39 +10,103 @@ require '../PHPMailer/src/PHPMailer.php';
 require '../PHPMailer/src/SMTP.php';
 require '../PHPMailer/src/Exception.php';
 
-
 $conexion = new mysqli("localhost", "root", "admin123", "JV");
 if ($conexion->connect_error) {
     die("Conexión fallida: " . $conexion->connect_error);
 }
 
 $mensaje = "";
-$resultado_clientes = $conexion->query("SELECT * FROM Clientes");
+$resultado_clientes = $conexion->query("SELECT c.*, m.nom as nombre_membresia, m.Precio as precio_membresia, p.Nombres as nombre_promocion, p.Precio as precio_promocion FROM Clientes c LEFT JOIN Membresias m ON c.membresia = m.codigo LEFT JOIN Promociones p ON c.promocion = p.codigoP");
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST['tipo'] == 'cliente') {
     $codigoC   = $_POST['codigoC'] ?? '';
     $nombres   = $_POST['Nombres'] ?? '';
     $apellidos = $_POST['Apellidos'] ?? '';
-    $fechaNac  = $_POST['Fecha_Nac'] ?? '';
     $correo    = $_POST['correo'] ?? '';
     $telefono  = $_POST['Telefono'] ?? '';
     $registro  = $_POST['Registro'] ?? '';
+    $codigoM   = $_POST['codigoM'] ?? '';  // Membresía seleccionada
+    $codigoP   = $_POST['codigoP'] ?? '';  // Promoción seleccionada
 
     // ===== INSERTAR =====
     if (isset($_POST['Ingresar'])) {
-        if ($codigoC == "" || $nombres == "" || $apellidos == "" || $fechaNac == "" || $correo == "" || $telefono == "" || $registro == "") {
+        if ($codigoC == "" || $nombres == "" || $apellidos == "" || $correo == "" || $telefono == "" || $registro == "") {
             $mensaje = "⚠️ Debes llenar todos los campos para insertar un cliente.";
         } else {
-            $sql = "INSERT INTO Clientes (codigoC, Nombres, Apellidos, Fecha_Nac, Correo, Telefono, Registro)
-                    VALUES ('$codigoC', '$nombres', '$apellidos', '$fechaNac', '$correo', '$telefono', '$registro')";
-            if ($conexion->query($sql) === TRUE) {
-                $mensaje = "✅ Cliente insertado correctamente.";
-
-                // ===== ENVIAR RECIBO POR CORREO =====
-                enviarRecibo($correo, $nombres, $apellidos, $registro);
-            } else {
-                $mensaje = "❌ Error al insertar: " . $conexion->error;
+            // Obtener datos de la membresía seleccionada
+            $precio_membresia = 0;
+            $fecha_fin_membresia = null;
+            $nombre_membresia = '';
+            $es_mensual = false;
+            
+            if (!empty($codigoM)) {
+                $stmt_mem = $conexion->prepare("SELECT Precio, nom FROM Membresias WHERE codigo = ?");
+                $stmt_mem->bind_param("s", $codigoM);
+                $stmt_mem->execute();
+                $resultado_mem = $stmt_mem->get_result();
+                if ($row_mem = $resultado_mem->fetch_assoc()) {
+                    $precio_membresia = floatval($row_mem['Precio']);
+                    $nombre_membresia = $row_mem['nom'];
+                    $es_mensual = stripos($nombre_membresia, 'mensualidad') !== false;
+                    // Calcular fecha fin (30 días desde la fecha de registro)
+                    $fecha_fin_membresia = date('Y-m-d', strtotime($registro . ' +30 days'));
+                }
+                $stmt_mem->close();
             }
+
+            // Obtener datos de la promoción seleccionada (solo si es membresía mensual)
+            $descuento_promocion = 0;
+            $nombre_promocion = '';
+            
+            if (!empty($codigoP) && $es_mensual) {
+                $stmt_prom = $conexion->prepare("SELECT Precio, Nombres FROM Promociones WHERE codigoP = ?");
+                $stmt_prom->bind_param("s", $codigoP);
+                $stmt_prom->execute();
+                $resultado_prom = $stmt_prom->get_result();
+                if ($row_prom = $resultado_prom->fetch_assoc()) {
+                    $descuento_promocion = floatval($row_prom['Precio']);
+                    $nombre_promocion = $row_prom['Nombres'];
+                }
+                $stmt_prom->close();
+            } elseif (!empty($codigoP) && !$es_mensual) {
+                // Si intenta aplicar promoción a membresía no mensual, resetear
+                $codigoP = '';
+            }
+
+            // Calcular precio final
+            $precio_final = $precio_membresia - $descuento_promocion;
+            $precio_final = max(0, $precio_final); // No puede ser negativo
+
+            // Actualizar la fecha fin de la membresía
+            if (!empty($codigoM) && $fecha_fin_membresia) {
+                $stmt_update_mem = $conexion->prepare("UPDATE Membresias SET Fecha_Fin = ? WHERE codigo = ?");
+                $stmt_update_mem->bind_param("ss", $fecha_fin_membresia, $codigoM);
+                $stmt_update_mem->execute();
+                $stmt_update_mem->close();
+            }
+
+            // Insertar cliente
+            $stmt = $conexion->prepare("INSERT INTO Clientes (codigoC, Nombres, Apellidos, Correo, Telefono, Registro, membresia, promocion) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssssssss", $codigoC, $nombres, $apellidos, $correo, $telefono, $registro, $codigoM, $codigoP);
+            
+            if ($stmt->execute()) {
+                $mensaje_detalle = "";
+                if ($descuento_promocion > 0 && $es_mensual) {
+                    $mensaje_detalle = " | Precio original: $" . number_format($precio_membresia, 2) . 
+                                     " | Descuento aplicado (" . $nombre_promocion . "): $" . number_format($descuento_promocion, 2) . 
+                                     " | Total con descuento: $" . number_format($precio_final, 2);
+                } elseif (!empty($codigoP) && !$es_mensual) {
+                    $mensaje_detalle = " | NOTA: Promoción no aplicada (solo válida para membresías mensuales)";
+                }
+                
+                $mensaje = "✅ Cliente insertado correctamente." . $mensaje_detalle;
+
+                // Enviar recibo por correo
+                enviarRecibo($correo, $nombres, $apellidos, $registro, $precio_membresia, $descuento_promocion, $precio_final, $nombre_promocion);
+            } else {
+                $mensaje = "❌ Error al insertar: " . $stmt->error;
+            }
+            $stmt->close();
         }
     }
 
@@ -51,29 +115,31 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST['tipo'] == 'cliente') {
         if ($codigoC == "" || $nombres == "") {
             $mensaje = "⚠️ Debes ingresar el Código y los datos a modificar.";
         } else {
-            $sql = "UPDATE Clientes SET 
-                        Nombres='$nombres',
-                        Apellidos='$apellidos',
-                        Fecha_Nac='$fechaNac',
-                        Correo='$correo',
-                        Telefono='$telefono',
-                        Registro='$registro'
-                    WHERE codigoC='$codigoC'";
-            $mensaje = ($conexion->query($sql) === TRUE) 
+            $stmt = $conexion->prepare("UPDATE Clientes SET Nombres=?, Apellidos=?, Correo=?, Telefono=?, Registro=?, membresia=?, promocion=? WHERE codigoC=?");
+            $stmt->bind_param("ssssssss", $nombres, $apellidos, $correo, $telefono, $registro, $codigoM, $codigoP, $codigoC);
+            $mensaje = ($stmt->execute()) 
                 ? "✅ Cliente modificado correctamente." 
-                : "❌ Error al modificar: " . $conexion->error;
+                : "❌ Error al modificar: " . $stmt->error;
+            $stmt->close();
         }
     }
 
     // ===== ELIMINAR =====
     if (isset($_POST['Eliminar'])) {
-        if ($codigoC == "") {
-            $mensaje = "⚠️ Debes ingresar el Código para eliminar.";
+        if ($codigoC == "" && $nombres == "") {
+            $mensaje = "⚠️ Debes ingresar el Código o el Nombre para eliminar.";
         } else {
-            $sql = "DELETE FROM Clientes WHERE codigoC='$codigoC'";
-            $mensaje = ($conexion->query($sql) === TRUE) 
+            if (!empty($codigoC)) {
+                $stmt = $conexion->prepare("DELETE FROM Clientes WHERE codigoC=?");
+                $stmt->bind_param("s", $codigoC);
+            } else {
+                $stmt = $conexion->prepare("DELETE FROM Clientes WHERE Nombres=?");
+                $stmt->bind_param("s", $nombres);
+            }
+            $mensaje = ($stmt->execute()) 
                 ? "✅ Cliente eliminado correctamente." 
-                : "❌ Error al eliminar: " . $conexion->error;
+                : "❌ Error al eliminar: " . $stmt->error;
+            $stmt->close();
         }
     }
 
@@ -82,31 +148,35 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST['tipo'] == 'cliente') {
         if ($codigoC == "" && $nombres == "") {
             $mensaje = "⚠️ Ingresa el Código o el Nombre para realizar la búsqueda.";
         } else {
-            $sql = "SELECT * FROM Clientes WHERE codigoC='$codigoC' OR Nombres LIKE '%$nombres%'";
-            $resultado = $conexion->query($sql);
-            if ($resultado->num_rows > 0) {
-                $row = $resultado->fetch_assoc();
+            $stmt = $conexion->prepare("SELECT c.*, m.nom as nombre_membresia, p.Nombres as nombre_promocion FROM Clientes c LEFT JOIN Membresias m ON c.membresia = m.codigo LEFT JOIN Promociones p ON c.promocion = p.codigoP WHERE c.codigoC=? OR c.Nombres LIKE ?");
+            $busqueda_nombre = "%$nombres%";
+            $stmt->bind_param("ss", $codigoC, $busqueda_nombre);
+            $stmt->execute();
+            $resultado = $stmt->get_result();
+            if ($row = $resultado->fetch_assoc()) {
                 $mensaje = "🔎 Cliente encontrado:<br>
                             Código: " . $row['codigoC'] . "<br>
                             Nombre: " . $row['Nombres'] . " " . $row['Apellidos'] . "<br>
-                            Fecha Nac: " . $row['Fecha_Nac'] . "<br>
                             Correo: " . $row['Correo'] . "<br>
                             Teléfono: " . $row['Telefono'] . "<br>
-                            Registro: " . $row['Registro'];
+                            Registro: " . $row['Registro'] . "<br>
+                            Membresía: " . ($row['nombre_membresia'] ?? 'N/A') . "<br>
+                            Promoción: " . ($row['nombre_promocion'] ?? 'N/A');
             } else {
                 $mensaje = "❌ No se encontró cliente con esos datos.";
             }
+            $stmt->close();
         }
     }
 
     // Refrescar tabla
-    $resultado_clientes = $conexion->query("SELECT * FROM Clientes");
+    $resultado_clientes = $conexion->query("SELECT c.*, m.nom as nombre_membresia, m.Precio as precio_membresia, p.Nombres as nombre_promocion, p.Precio as precio_promocion FROM Clientes c LEFT JOIN Membresias m ON c.membresia = m.codigo LEFT JOIN Promociones p ON c.promocion = p.codigoP");
 }
 
 $conexion->close();
 
 // ================== FUNCION DE ENVIO DE CORREO ==================
-function enviarRecibo($correo, $nombre, $apellido, $registro) {
+function enviarRecibo($correo, $nombre, $apellido, $registro, $precio_membresia, $descuento, $precio_final, $nombre_promocion) {
     $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
     try {
@@ -114,8 +184,8 @@ function enviarRecibo($correo, $nombre, $apellido, $registro) {
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = 'trabinfofinal25@gmail.com'; // tu correo Gmail
-        $mail->Password = 'invy orda zsrb zkcr'; // clave de aplicación
+        $mail->Username = 'trabinfofinal25@gmail.com';
+        $mail->Password = 'invy orda zsrb zkcr';
         $mail->SMTPSecure = 'tls';
         $mail->Port = 587;
 
@@ -128,15 +198,26 @@ function enviarRecibo($correo, $nombre, $apellido, $registro) {
         $mail->Subject = "Recibo de Registro - Gimnasio JV";
 
         $fechaPago = date("Y-m-d");
-        $fechaVencimiento = date("Y-m-d", strtotime("+1 month")); // ejemplo: membresía por 1 mes
+        $fechaVencimiento = date("Y-m-d", strtotime($registro . " +1 month"));
+
+        $detalle_promocion = "";
+        if ($descuento > 0) {
+            $detalle_promocion = "
+                <p><b>Precio original:</b> $" . number_format($precio_membresia, 2) . "</p>
+                <p><b>Descuento aplicado (" . $nombre_promocion . "):</b> -$" . number_format($descuento, 2) . "</p>
+                <hr>
+            ";
+        }
 
         $mail->Body = "
-            <h2>Hola $nombre $apellido 👋</h2>
+            <h2>¡Hola $nombre $apellido! 👋</h2>
             <p>¡Gracias por registrarte en <b>Gimnasio JVCenter</b>!</p>
-            <p><b>Se registro el día:</b> $registro</p>
+            <p><b>Se registró el día:</b> $registro</p>
             <p><b>Fecha de Pago:</b> $fechaPago</p>
             <p><b>Fecha de Vencimiento:</b> $fechaVencimiento</p>
-            <p><b>Monto:</b> $20.00 </p>
+            <hr>
+            $detalle_promocion
+            <p><b>Total pagado:</b> $" . number_format($precio_final, 2) . "</p>
             <br>
             <p>💪 Mantente motivado y sigue entrenando fuerte para alcanzar tus metas.</p>
             <p>¡Nos vemos en el gimnasio! 🚀</p>
@@ -148,7 +229,6 @@ function enviarRecibo($correo, $nombre, $apellido, $registro) {
     }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="es">
@@ -174,7 +254,7 @@ function enviarRecibo($correo, $nombre, $apellido, $registro) {
             border-radius: 16px;
             box-shadow: 0 8px 32px rgba(255, 165, 0, 0.2);
             width: 90%;
-            max-width: 900px;
+            max-width: 1100px;
             text-align: center;
             position: relative;
             padding-bottom: 100px;
@@ -212,9 +292,10 @@ function enviarRecibo($correo, $nombre, $apellido, $registro) {
             margin-top: 25px;
         }
         th, td {
-            padding: 14px 12px;
+            padding: 10px 8px;
             border-bottom: 1px solid #f39c12;
             text-align: center;
+            font-size: 14px;
         }
         th {
             background-color: #2e2e2e;
@@ -227,7 +308,7 @@ function enviarRecibo($correo, $nombre, $apellido, $registro) {
         }
         @media (max-width: 600px) {
             .container { padding: 20px; }
-            table, th, td { font-size: 14px; }
+            table, th, td { font-size: 12px; }
             .btn { width: 100%; }
         }
     </style>
@@ -246,6 +327,9 @@ function enviarRecibo($correo, $nombre, $apellido, $registro) {
                 <th>Apellidos</th>
                 <th>Correo</th>
                 <th>Teléfono</th>
+                <th>Registro</th>
+                <th>Membresía</th>
+                <th>Promoción</th>
             </tr>
             <?php if ($resultado_clientes && $resultado_clientes->num_rows > 0): ?>
                 <?php while ($cliente = $resultado_clientes->fetch_assoc()): ?>
@@ -255,10 +339,13 @@ function enviarRecibo($correo, $nombre, $apellido, $registro) {
                         <td><?php echo htmlspecialchars($cliente['Apellidos']); ?></td>
                         <td><?php echo htmlspecialchars($cliente['Correo']); ?></td>
                         <td><?php echo htmlspecialchars($cliente['Telefono']); ?></td>
+                        <td><?php echo htmlspecialchars($cliente['Registro']); ?></td>
+                        <td><?php echo htmlspecialchars($cliente['nombre_membresia'] ?? 'N/A'); ?></td>
+                        <td><?php echo htmlspecialchars($cliente['nombre_promocion'] ?? 'N/A'); ?></td>
                     </tr>
                 <?php endwhile; ?>
             <?php else: ?>
-                <tr><td colspan="5">No hay clientes registrados.</td></tr>
+                <tr><td colspan="8">No hay clientes registrados.</td></tr>
             <?php endif; ?>
         </table>
     </div>

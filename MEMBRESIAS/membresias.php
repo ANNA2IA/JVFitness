@@ -1,78 +1,92 @@
 <?php
-$conexion = new mysqli("localhost", "root", "admin123", "JV");
+include("../seguridad.php");
 
+$conexion = new mysqli("localhost", "root", "admin123", "JV");
 if ($conexion->connect_error) {
     die("Conexión fallida: " . $conexion->connect_error);
 }
+$conexion->set_charset("utf8mb4");
 
 $mensaje = "";
 $resultado_membresias = $conexion->query("SELECT * FROM Membresias");
 
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['tipo']) && $_POST['tipo'] == 'membresia') {
-    $codigo      = $_POST['codigo'] ?? '';
-    $codigoC     = $_POST['codigoC'] ?? '';
-    $codigoP     = $_POST['codigoP'] ?? '';
-    $codigoPL    = $_POST['codigoPL'] ?? '';
-    $fechaIni    = $_POST['Fecha_Ini'] ?? '';
-    $fechaFin    = $_POST['Fecha_Fin'] ?? '';
-    $precio      = $_POST['Precio'] ?? '';
-    $metodo      = $_POST['metodo'] ?? '';
+if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST['tipo'] ?? '') === 'membresia') {
+    $codigo = trim($_POST['codigo'] ?? '');
+    $Nombre = trim($_POST['nom'] ?? '');
+    $precio = trim($_POST['Precio'] ?? '');
 
     if (isset($_POST['Ingresar'])) {
-        $sql = "INSERT INTO Membresias (codigo, codigoC, codigoP, codigoPL, Fecha_Ini, Fecha_Fin, Precio, metodo)
-                VALUES ('$codigo', '$codigoC', '$codigoP', '$codigoPL', '$fechaIni', '$fechaFin', '$precio', '$metodo')";
-        $mensaje = ($conexion->query($sql) === TRUE)
-            ? "Membresía insertada correctamente."
-            : "Error: " . $conexion->error;
-    }
-
-    if (isset($_POST['Modificar'])) {
-        $sql = "UPDATE Membresias SET 
-                    codigoC='$codigoC',
-                    codigoP='$codigoP',
-                    codigoPL='$codigoPL',
-                    Fecha_Ini='$fechaIni',
-                    Fecha_Fin='$fechaFin',
-                    Precio='$precio',
-                    metodo='$metodo'
-                WHERE codigo='$codigo'";
-        $mensaje = ($conexion->query($sql) === TRUE)
-            ? "Membresía modificada correctamente."
-            : "Error: " . $conexion->error;
-    }
-
-    if (isset($_POST['Eliminar'])) {
-        $sql = "DELETE FROM Membresias WHERE codigo='$codigo'";
-        $mensaje = ($conexion->query($sql) === TRUE)
-            ? "Membresía eliminada correctamente."
-            : "Error: " . $conexion->error;
-    }
-
-    if (isset($_POST['Buscar'])) {
-        $sql = "SELECT * FROM Membresias WHERE codigo='$codigo'";
-        $resultado = $conexion->query($sql);
-        if ($resultado->num_rows > 0) {
-            $row = $resultado->fetch_assoc();
-            $mensaje = "🎉 Membresía encontrada:<br>
-                        Cliente: " . $row['codigoC'] . "<br>
-                        Promoción: " . $row['codigoP'] . "<br>
-                        Plan: " . $row['codigoPL'] . "<br>
-                        Fecha Inicio: " . $row['Fecha_Ini'] . "<br>
-                        Fecha Fin: " . $row['Fecha_Fin'] . "<br>
-                        Precio: $" . $row['Precio'] . "<br>
-                        Método de pago: " . $row['metodo'];
+        if ($codigo === "" || $Nombre === "" || $precio === "") {
+            $mensaje = "⚠️ Debes llenar todos los campos para insertar una membresía.";
+        } elseif (!is_numeric($precio)) {
+            $mensaje = "⚠️ El precio debe ser numérico.";
         } else {
-            $mensaje = "No se encontró una membresía con ese código.";
+            $stmt = $conexion->prepare("INSERT INTO Membresias (codigo, nom, Precio) VALUES (?, ?, ?)");
+            $stmt->bind_param("sss", $codigo, $Nombre, $precio);
+            $mensaje = ($stmt->execute())
+                ? "✅ Membresía insertada correctamente."
+                : "❌ Error al insertar: " . $stmt->error;
+            $stmt->close();
+        }
+    } elseif (isset($_POST['Modificar'])) {
+        if ($codigo === "") {
+            $mensaje = "⚠️ Debes ingresar el Código de membresía para modificar.";
+        } else {
+            $stmt = $conexion->prepare("UPDATE Membresias SET nom = ?, Precio = ? WHERE codigo = ?");
+            $stmt->bind_param("sss", $Nombre, $precio, $codigo);
+            $mensaje = ($stmt->execute())
+                ? "✅ Membresía modificada correctamente."
+                : "❌ Error al modificar: " . $stmt->error;
+            $stmt->close();
+        }
+    } elseif (isset($_POST['Eliminar'])) {
+        if ($codigo === "" && $Nombre === "") {
+            $mensaje = "⚠️ Debes ingresar el Código o el Nombre para eliminar.";
+        } else {
+            if (!empty($codigo)) {
+                $stmt = $conexion->prepare("DELETE FROM Membresias WHERE codigo = ?");
+                $stmt->bind_param("s", $codigo);
+            } else {
+                $stmt = $conexion->prepare("DELETE FROM Membresias WHERE nom = ?");
+                $stmt->bind_param("s", $Nombre);
+            }
+            $mensaje = ($stmt->execute())
+                ? "✅ Membresía eliminada correctamente."
+                : "❌ Error al eliminar: " . $stmt->error;
+            $stmt->close();
+        }
+    } elseif (isset($_POST['Buscar'])) {
+        if ($codigo === "" && $Nombre === "") {
+            $mensaje = "⚠️ Ingresa el Código o el Nombre para buscar la membresía.";
+        } else {
+            if (!empty($codigo)) {
+                $stmt = $conexion->prepare("SELECT * FROM Membresias WHERE codigo = ?");
+                $stmt->bind_param("s", $codigo);
+            } else {
+                $stmt = $conexion->prepare("SELECT * FROM Membresias WHERE nom LIKE ?");
+                $busqueda_nombre = "%$Nombre%";
+                $stmt->bind_param("s", $busqueda_nombre);
+            }
+            
+            $stmt->execute();
+            $resultado_b = $stmt->get_result();
+            if ($row = $resultado_b->fetch_assoc()) {
+                $mensaje = "🎉 Membresía encontrada:<br>
+                            Código: " . htmlspecialchars($row['codigo']) . "<br>
+                            Membresía: " . htmlspecialchars($row['nom']) . "<br>
+                            Precio: $" . htmlspecialchars($row['Precio']) . "<br>";
+            } else {
+                $mensaje = "❌ No se encontró una membresía con esos datos.";
+            }
+            $stmt->close();
         }
     }
 
-    // Refrescar tabla después de operaciones
     $resultado_membresias = $conexion->query("SELECT * FROM Membresias");
 }
 
 $conexion->close();
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -165,29 +179,19 @@ $conexion->close();
         <table>
             <tr>
                 <th>Código</th>
-                <th>Cliente</th>
-                <th>Promoción</th>
-                <th>Plan</th>
-                <th>Fecha Inicio</th>
-                <th>Fecha Fin</th>
+                <th>Nombre</th>
                 <th>Precio</th>
-                <th>Método</th>
             </tr>
             <?php if ($resultado_membresias && $resultado_membresias->num_rows > 0): ?>
-                <?php while ($membresia = $resultado_membresias->fetch_assoc()): ?>
+                <?php while ($m = $resultado_membresias->fetch_assoc()): ?>
                     <tr>
-                        <td><?php echo htmlspecialchars($membresia['codigo']); ?></td>
-                        <td><?php echo htmlspecialchars($membresia['codigoC']); ?></td>
-                        <td><?php echo htmlspecialchars($membresia['codigoP']); ?></td>
-                        <td><?php echo htmlspecialchars($membresia['codigoPL']); ?></td>
-                        <td><?php echo htmlspecialchars($membresia['Fecha_Ini']); ?></td>
-                        <td><?php echo htmlspecialchars($membresia['Fecha_Fin']); ?></td>
-                        <td>$<?php echo htmlspecialchars($membresia['Precio']); ?></td>
-                        <td><?php echo htmlspecialchars($membresia['metodo']); ?></td>
+                        <td><?php echo htmlspecialchars($m['codigo']); ?></td>
+                        <td><?php echo htmlspecialchars($m['nom']); ?></td>
+                        <td>$<?php echo htmlspecialchars($m['Precio']); ?></td>
                     </tr>
                 <?php endwhile; ?>
             <?php else: ?>
-                <tr><td colspan="8">No hay membresías registradas.</td></tr>
+                <tr><td colspan="3">No hay membresías registradas.</td></tr>
             <?php endif; ?>
         </table>
     </div>

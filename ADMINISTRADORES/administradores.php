@@ -1,5 +1,4 @@
 <?php
-
 include("../LOGIN/seguridad.php");
 
 $conexion = new mysqli("localhost", "root", "admin123", "JV");
@@ -60,13 +59,18 @@ if (isset($_POST['Modificar'])) {
 
 //  Eliminar
 if (isset($_POST['Eliminar'])) {
-    if (!empty($usuario) || !empty($codigoA)) {
+    if (empty($usuario) && empty($codigoA) && empty($nombres)) {
+        $mensaje = "⚠️ Debes ingresar el Código, Usuario o Nombre para eliminar.";
+    } else {
         if (!empty($usuario)) {
             $stmt = $conexion->prepare("DELETE FROM Administradores WHERE Usuario=?");
             $stmt->bind_param("s", $usuario);
-        } else {
+        } elseif (!empty($codigoA)) {
             $stmt = $conexion->prepare("DELETE FROM Administradores WHERE codigoA=?");
             $stmt->bind_param("s", $codigoA);
+        } else {
+            $stmt = $conexion->prepare("DELETE FROM Administradores WHERE Nombres=?");
+            $stmt->bind_param("s", $nombres);
         }
 
         if ($stmt->execute()) {
@@ -75,20 +79,24 @@ if (isset($_POST['Eliminar'])) {
             $mensaje = "❌ Error al eliminar: " . $stmt->error;
         }
         $stmt->close();
-    } else {
-        $mensaje = "⚠️ Debes ingresar el Código o el Usuario para eliminar.";
     }
 }
 
 //  Buscar
 if (isset($_POST['Buscar'])) {
-    if (!empty($usuario) || !empty($codigoA)) {
+    if (empty($usuario) && empty($codigoA) && empty($nombres)) {
+        $mensaje = "⚠️ Ingresa el Código, Usuario o Nombre para buscar.";
+    } else {
         if (!empty($usuario)) {
             $stmt = $conexion->prepare("SELECT * FROM Administradores WHERE Usuario=?");
             $stmt->bind_param("s", $usuario);
-        } else {
+        } elseif (!empty($codigoA)) {
             $stmt = $conexion->prepare("SELECT * FROM Administradores WHERE codigoA=?");
             $stmt->bind_param("s", $codigoA);
+        } else {
+            $stmt = $conexion->prepare("SELECT * FROM Administradores WHERE Nombres LIKE ?");
+            $busqueda_nombre = "%$nombres%";
+            $stmt->bind_param("s", $busqueda_nombre);
         }
 
         $stmt->execute();
@@ -103,8 +111,6 @@ if (isset($_POST['Buscar'])) {
             $mensaje = "⚠️ No se encontró el administrador.";
         }
         $stmt->close();
-    } else {
-        $mensaje = "⚠️ Ingresa al menos el Código o el Usuario para buscar.";
     }
 }
 
@@ -119,7 +125,7 @@ $conexion->close();
 <head>
     <meta charset="UTF-8">
     <title>Administradores</title>
-       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 <style>
     * {
         box-sizing: border-box;
@@ -253,6 +259,3 @@ $conexion->close();
     </div>
 </body>
 </html>
-
-
-

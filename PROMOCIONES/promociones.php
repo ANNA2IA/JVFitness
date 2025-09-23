@@ -1,14 +1,14 @@
 <?php
 $conexion = new mysqli("localhost", "root", "admin123", "JV");
-
 if ($conexion->connect_error) {
     die("Conexión fallida: " . $conexion->connect_error);
 }
+$conexion->set_charset("utf8mb4");
 
 $mensaje = "";
 $resultado_promos = $conexion->query("SELECT * FROM Promociones");
 
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['tipo']) && $_POST['tipo'] == 'promocion') {
+if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST['tipo'] ?? '') === 'promocion') {
     $codigoP     = $_POST['codigoP'] ?? '';
     $nombres     = $_POST['Nombres'] ?? '';
     $precio      = $_POST['Precio'] ?? '';
@@ -17,50 +17,78 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['tipo']) && $_POST['ti
     $descripcion = $_POST['Descripcion'] ?? '';
 
     if (isset($_POST['Ingresar'])) {
-        $sql = "INSERT INTO Promociones (codigoP, Nombres, Precio, Fecha_Ini, Fecha_Fin, Descripcion)
-                VALUES ('$codigoP', '$nombres', '$precio', '$fechaIni', '$fechaFin', '$descripcion')";
-        $mensaje = ($conexion->query($sql) === TRUE)
-            ? "Promoción insertada correctamente."
-            : "Error: " . $conexion->error;
+        $stmt = $conexion->prepare("
+            INSERT INTO Promociones (codigoP, Nombres, Precio, Fecha_Ini, Fecha_Fin, Descripcion)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->bind_param("ssssss", $codigoP, $nombres, $precio, $fechaIni, $fechaFin, $descripcion);
+        $mensaje = ($stmt->execute())
+            ? "✅ Promoción insertada correctamente."
+            : "❌ Error al insertar: " . $stmt->error;
+        $stmt->close();
     }
 
     if (isset($_POST['Modificar'])) {
-        $sql = "UPDATE Promociones SET 
-                    Nombres='$nombres',
-                    Precio='$precio',
-                    Fecha_Ini='$fechaIni',
-                    Fecha_Fin='$fechaFin',
-                    Descripcion='$descripcion'
-                WHERE codigoP='$codigoP'";
-        $mensaje = ($conexion->query($sql) === TRUE)
-            ? "Promoción modificada correctamente."
-            : "Error: " . $conexion->error;
+        $stmt = $conexion->prepare("
+            UPDATE Promociones SET 
+                Nombres = ?, Precio = ?, Fecha_Ini = ?, Fecha_Fin = ?, Descripcion = ?
+            WHERE codigoP = ?
+        ");
+        $stmt->bind_param("ssssss", $nombres, $precio, $fechaIni, $fechaFin, $descripcion, $codigoP);
+        $mensaje = ($stmt->execute())
+            ? "✅ Promoción modificada correctamente."
+            : "❌ Error al modificar: " . $stmt->error;
+        $stmt->close();
     }
 
     if (isset($_POST['Eliminar'])) {
-        $sql = "DELETE FROM Promociones WHERE codigoP='$codigoP'";
-        $mensaje = ($conexion->query($sql) === TRUE)
-            ? "Promoción eliminada correctamente."
-            : "Error: " . $conexion->error;
-    }
-
-    if (isset($_POST['Buscar'])) {
-        $sql = "SELECT * FROM Promociones WHERE codigoP='$codigoP'";
-        $resultado = $conexion->query($sql);
-        if ($resultado->num_rows > 0) {
-            $row = $resultado->fetch_assoc();
-            $mensaje = "🎉 Promociones:<br>
-                        Nombre: " . $row['Nombres'] . "<br>
-                        Precio: $" . $row['Precio'] . "<br>
-                        Fecha Inicio: " . $row['Fecha_Ini'] . "<br>
-                        Fecha Fin: " . $row['Fecha_Fin'] . "<br>
-                        Descripción: " . $row['Descripcion'];
+        if ($codigoP == "" && $nombres == "") {
+            $mensaje = "⚠️ Debes ingresar el Código o el Nombre para eliminar.";
         } else {
-            $mensaje = "No se encontró una promoción con ese código.";
+            if (!empty($codigoP)) {
+                $stmt = $conexion->prepare("DELETE FROM Promociones WHERE codigoP = ?");
+                $stmt->bind_param("s", $codigoP);
+            } else {
+                $stmt = $conexion->prepare("DELETE FROM Promociones WHERE Nombres = ?");
+                $stmt->bind_param("s", $nombres);
+            }
+            $mensaje = ($stmt->execute())
+                ? "✅ Promoción eliminada correctamente."
+                : "❌ Error al eliminar: " . $stmt->error;
+            $stmt->close();
         }
     }
 
-    // Refrescar tabla después de operaciones
+    if (isset($_POST['Buscar'])) {
+        if ($codigoP == "" && $nombres == "") {
+            $mensaje = "⚠️ Debes ingresar el Código o el Nombre para buscar.";
+        } else {
+            if (!empty($codigoP)) {
+                $stmt = $conexion->prepare("SELECT * FROM Promociones WHERE codigoP = ?");
+                $stmt->bind_param("s", $codigoP);
+            } else {
+                $stmt = $conexion->prepare("SELECT * FROM Promociones WHERE Nombres LIKE ?");
+                $busqueda_nombre = "%$nombres%";
+                $stmt->bind_param("s", $busqueda_nombre);
+            }
+            
+            $stmt->execute();
+            $resultado = $stmt->get_result();
+            if ($row = $resultado->fetch_assoc()) {
+                $mensaje = "🎉 Promoción encontrada:<br>
+                            Código: " . htmlspecialchars($row['codigoP']) . "<br>
+                            Nombre: " . htmlspecialchars($row['Nombres']) . "<br>
+                            Precio: $" . htmlspecialchars($row['Precio']) . "<br>
+                            Fecha Inicio: " . htmlspecialchars($row['Fecha_Ini']) . "<br>
+                            Fecha Fin: " . htmlspecialchars($row['Fecha_Fin']) . "<br>
+                            Descripción: " . htmlspecialchars($row['Descripcion']);
+            } else {
+                $mensaje = "❌ No se encontró una promoción con esos datos.";
+            }
+            $stmt->close();
+        }
+    }
+
     $resultado_promos = $conexion->query("SELECT * FROM Promociones");
 }
 
