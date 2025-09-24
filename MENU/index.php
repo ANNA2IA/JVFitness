@@ -366,9 +366,9 @@ $conn->close();
     <div id="form-clientes" class="form-container"> 
       <h2>Formulario de Clientes</h2> 
       <form method="POST" action="../CLIENTES/clientes.php">
-        <input type="text" name="codigoC" placeholder="Código" required>
-        <input type="text" name="Nombres" placeholder="Nombres" required>
-        <input type="text" name="Apellidos" placeholder="Apellidos" required> 
+        <input type="text" name="codigoC" placeholder="Código" >
+        <input type="text" name="Nombres" placeholder="Nombres" >
+        <input type="text" name="Apellidos" placeholder="Apellidos" > 
         
         <!-- Select de Membresías -->
         <select name="codigoM" id="membresiaSelect" onchange="calcularPrecio()">
@@ -409,9 +409,9 @@ $conn->close();
           <div class="price-details" id="precioFinal"></div>
         </div>
 
-        <input type="email" name="correo" placeholder="Correo" required>
-        <input type="text" name="Telefono" placeholder="Teléfono" required>
-        <input type="date" name="Registro" placeholder="Fecha de Pago" required> 
+        <input type="email" name="correo" placeholder="Correo" >
+        <input type="text" name="Telefono" placeholder="Teléfono" >
+        <input type="date" name="Registro" placeholder="Fecha de Pago" > 
         <input type="hidden" name="tipo" value="cliente">
         <div class="form-actions">
           <button type="submit" name="Ingresar">Insertar</button> 
