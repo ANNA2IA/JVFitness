@@ -14,7 +14,7 @@ CREATE TABLE Clientes (
     codigoC VARCHAR(5) PRIMARY KEY,
     Nombres VARCHAR(100),
     Apellidos VARCHAR(100),
-    Correo VARCHAR(20),
+    Correo VARCHAR(100),
     Telefono VARCHAR(100),
     Registro VARCHAR(100)
 );
