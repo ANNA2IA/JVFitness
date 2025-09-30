@@ -498,21 +498,16 @@ $conn->close();
     const links = document.querySelectorAll('.fab-options a[data-target]');
     const formularios = document.querySelectorAll('#formularios > div');
 
-    // Toggle menú FAB
     fab.addEventListener('click', () => {
       fabContainer.classList.toggle('show');
     });
 
-    // Manejo clicks en opciones del menú
     links.forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
         const target = link.getAttribute('data-target');
-
-        // Ocultar todos los formularios
         formularios.forEach(f => f.style.display = 'none');
         
-        // Mostrar/ocultar la sección de clientes según el formulario
         const clientesStatusSection = document.getElementById('clientes-status-section');
         if (target === 'clientes-tabla') {
           clientesStatusSection.style.display = 'block';
@@ -520,33 +515,60 @@ $conn->close();
           clientesStatusSection.style.display = 'none';
         }
 
-        // Mostrar formulario o tabla seleccionado
         const seleccionado = document.getElementById('form-' + target);
         if (seleccionado) {
           seleccionado.style.display = 'block';
         }
-
-        // Cerrar menú automáticamente
         fabContainer.classList.remove('show');
       });
     });
 
-    // Mostrar tabla clientes por defecto al cargar la página
     document.addEventListener('DOMContentLoaded', () => {
       formularios.forEach(f => f.style.display = 'none');
       document.getElementById('form-clientes-tabla').style.display = 'block';
       document.getElementById('clientes-status-section').style.display = 'block';
-      validarPromociones(); // Validar promociones al cargar
+      validarPromociones();
+      agregarValidaciones();
     });
 
-    // Función para validar promociones según fecha actual
+    function agregarValidaciones() {
+      const camposTexto = document.querySelectorAll('input[name="Nombres"], input[name="Apellidos"]');
+      camposTexto.forEach(campo => {
+        campo.addEventListener('input', function() {
+          this.value = this.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s]/g, '');
+        });
+      });
+const campoTelefono = document.querySelector('input[name="Telefono"]');
+if (campoTelefono) {
+  campoTelefono.addEventListener('input', function () {
+    this.value = this.value.replace(/[^0-9]/g, '');
+  });
+}
+
+      const camposPrecio = document.querySelectorAll('input[name="Precio"]');
+      camposPrecio.forEach(campo => {
+        campo.addEventListener('input', function() {
+          this.value = this.value.replace(/[^0-9.]/g, '');
+          const partes = this.value.split('.');
+          if (partes.length > 2) {
+            this.value = partes[0] + '.' + partes.slice(1).join('');
+          }
+        });
+      });
+      const campoNombreMembresia = document.querySelector('input[name="nom"]');
+if (campoNombreMembresia) {
+  campoNombreMembresia.addEventListener('input', function () {
+    this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+  });
+}
+    }
+
     function validarPromociones() {
       const hoy = new Date().toISOString().split('T')[0];
       const promocionSelect = document.getElementById('promocionSelect');
       
       if (promocionSelect) {
         const opciones = promocionSelect.querySelectorAll('option[data-inicio]');
-        
         opciones.forEach(opcion => {
           const fechaInicio = opcion.getAttribute('data-inicio');
           const fechaFin = opcion.getAttribute('data-fin');
@@ -554,10 +576,10 @@ $conn->close();
           if (fechaInicio && fechaFin) {
             if (hoy >= fechaInicio && hoy <= fechaFin) {
               opcion.disabled = false;
-              opcion.style.color = '#00ff99'; // Verde para disponibles
+              opcion.style.color = '#00ff99';
             } else {
               opcion.disabled = true;
-              opcion.style.color = '#666'; // Gris para no disponibles
+              opcion.style.color = '#666';
               opcion.textContent += ' [No disponible]';
             }
           }
@@ -565,7 +587,6 @@ $conn->close();
       }
     }
 
-    // Función para calcular precio final
     function calcularPrecio() {
       const membresiaSelect = document.getElementById('membresiaSelect');
       const promocionSelect = document.getElementById('promocionSelect');
@@ -589,14 +610,14 @@ $conn->close();
 
         const total = Math.max(0, precioMembresia - descuento);
 
-        precioOriginal.textContent = `Precio de Membresía: ${precioMembresia.toFixed(2)}`;
+        precioOriginal.textContent = `Precio de Membresía: $${precioMembresia.toFixed(2)}`;
         
         if (descuento > 0) {
-          descuentoInfo.innerHTML = `Descuento aplicado (${nombrePromocion}): -${descuento.toFixed(2)}`;
-          precioFinal.textContent = `Total a pagar: ${total.toFixed(2)}`;
+          descuentoInfo.innerHTML = `Descuento aplicado (${nombrePromocion}): -$${descuento.toFixed(2)}`;
+          precioFinal.textContent = `Total a pagar: $${total.toFixed(2)}`;
         } else {
           descuentoInfo.textContent = '';
-          precioFinal.textContent = `Total a pagar: ${total.toFixed(2)}`;
+          precioFinal.textContent = `Total a pagar: $${total.toFixed(2)}`;
         }
 
         calculator.style.display = 'block';
@@ -605,7 +626,6 @@ $conn->close();
       }
     }
 
-    // Validar promociones cuando se carga la página
     window.addEventListener('load', validarPromociones);
   </script>
 </body>

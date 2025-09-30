@@ -180,22 +180,24 @@ function enviarRecibo($correo, $nombre, $apellido, $registro, $precio_membresia,
     $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
     try {
-        // Configuración SMTP Gmail
+        // Configuración SMTP Gmail - CRÍTICO
+        $mail->SMTPDebug = 0; // Cambiar a 2 para ver errores
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
         $mail->Username = 'trabinfofinal25@gmail.com';
-        $mail->Password = 'invy orda zsrb zkcr';
+        $mail->Password = 'invy orda zsrb zkcr'; // Eliminar espacios si fallan
         $mail->SMTPSecure = 'tls';
         $mail->Port = 587;
+        $mail->CharSet = 'UTF-8';
 
         // Remitente y destinatario
         $mail->setFrom('trabinfofinal25@gmail.com', 'Gimnasio JV');
-        $mail->addAddress($correo, "$nombre $apellido");
+        $mail->addAddress($correo, $nombre . " " . $apellido);
 
-        // Contenido
+        // Contenido HTML
         $mail->isHTML(true);
-        $mail->Subject = "Recibo de Registro - Gimnasio JV";
+        $mail->Subject = 'Recibo de Registro - Gimnasio JV';
 
         $fechaPago = date("Y-m-d");
         $fechaVencimiento = date("Y-m-d", strtotime($registro . " +1 month"));
@@ -204,28 +206,32 @@ function enviarRecibo($correo, $nombre, $apellido, $registro, $precio_membresia,
         if ($descuento > 0) {
             $detalle_promocion = "
                 <p><b>Precio original:</b> $" . number_format($precio_membresia, 2) . "</p>
-                <p><b>Descuento aplicado (" . $nombre_promocion . "):</b> -$" . number_format($descuento, 2) . "</p>
+                <p><b>Descuento aplicado (" . htmlspecialchars($nombre_promocion) . "):</b> -$" . number_format($descuento, 2) . "</p>
                 <hr>
             ";
         }
 
         $mail->Body = "
-            <h2>¡Hola $nombre $apellido! 👋</h2>
+            <h2>¡Hola " . htmlspecialchars($nombre) . " " . htmlspecialchars($apellido) . "! 👋</h2>
             <p>¡Gracias por registrarte en <b>Gimnasio JVCenter</b>!</p>
-            <p><b>Se registró el día:</b> $registro</p>
+            <p><b>Se registró el día:</b> " . htmlspecialchars($registro) . "</p>
             <p><b>Fecha de Pago:</b> $fechaPago</p>
             <p><b>Fecha de Vencimiento:</b> $fechaVencimiento</p>
             <hr>
             $detalle_promocion
             <p><b>Total pagado:</b> $" . number_format($precio_final, 2) . "</p>
             <br>
-            <p>💪 Mantente motivado y sigue entrenando fuerte para alcanzar tus metas.</p>
+            <p>💪 Mantente motivado y sigue entrenando fuerte.</p>
             <p>¡Nos vemos en el gimnasio! 🚀</p>
         ";
 
         $mail->send();
+        return true;
     } catch (Exception $e) {
-        error_log("Error al enviar correo a $correo: " . $mail->ErrorInfo);
+        // MOSTRAR el error en pantalla para debug
+        echo "Error de correo: " . $mail->ErrorInfo;
+        error_log("Error al enviar correo: " . $mail->ErrorInfo);
+        return false;
     }
 }
 ?>

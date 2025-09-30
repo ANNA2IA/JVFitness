@@ -1,5 +1,5 @@
 <?php
-include("../LOGIN/seguridad.php");
+include("../seguridad.php");
 
 $conexion = new mysqli("localhost", "root", "admin123", "JV");
 

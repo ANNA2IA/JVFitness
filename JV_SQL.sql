@@ -15,7 +15,7 @@ CREATE TABLE Clientes (
     Nombres VARCHAR(100),
     Apellidos VARCHAR(100),
     Correo VARCHAR(100),
-    Telefono VARCHAR(100),
+    Telefono VARCHAR(100), 
     Registro VARCHAR(100)
 );
 
@@ -45,4 +45,5 @@ ALTER TABLE Membresias ADD COLUMN Fecha_Fin DATE;
 insert into Administradores values ('A0001','Shantall', 'Alegria','Shanty','info3ia');
 select * from Administradores;
 select * from Clientes;
+select * from Membresias;
 DESCRIBE Membresias;
