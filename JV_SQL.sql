@@ -16,7 +16,8 @@ CREATE TABLE Clientes (
     Apellidos VARCHAR(100),
     Correo VARCHAR(100),
     Telefono VARCHAR(100), 
-    Registro VARCHAR(100)
+    Registro DATE,
+     Fecha_Fin DATE
 );
 
 ALTER TABLE Clientes ADD COLUMN membresia VARCHAR(50);
@@ -27,8 +28,8 @@ CREATE TABLE Promociones (
     codigoP VARCHAR(5) PRIMARY KEY,
     Nombres VARCHAR(100),
     Precio VARCHAR(100),
-    Fecha_Ini VARCHAR(100),
-    Fecha_Fin VARCHAR(20),
+    Fecha_Ini DATE,
+    Fecha_Fin DATE,
     Descripcion VARCHAR(800)
 );
 
@@ -38,7 +39,7 @@ CREATE TABLE Membresias (
     nom VARCHAR(50),
     Precio VARCHAR(800)
 );
-ALTER TABLE Membresias ADD COLUMN Fecha_Fin DATE;
+
 
 
 

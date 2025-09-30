@@ -180,8 +180,11 @@ function enviarRecibo($correo, $nombre, $apellido, $registro, $precio_membresia,
     $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
     try {
-        // Configuración SMTP Gmail - CRÍTICO
-        $mail->SMTPDebug = 0; // Cambiar a 2 para ver errores
+        // MOSTRAR DEBUG SMTP EN PANTALLA
+        $mail->SMTPDebug = 2;
+        $mail->Debugoutput = 'html';
+
+        // CONFIGURACIÓN SMTP
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
@@ -191,11 +194,11 @@ function enviarRecibo($correo, $nombre, $apellido, $registro, $precio_membresia,
         $mail->Port = 587;
         $mail->CharSet = 'UTF-8';
 
-        // Remitente y destinatario
+        // DESTINATARIO
         $mail->setFrom('trabinfofinal25@gmail.com', 'Gimnasio JV');
         $mail->addAddress($correo, $nombre . " " . $apellido);
 
-        // Contenido HTML
+        // CONTENIDO DEL CORREO
         $mail->isHTML(true);
         $mail->Subject = 'Recibo de Registro - Gimnasio JV';
 
@@ -213,27 +216,30 @@ function enviarRecibo($correo, $nombre, $apellido, $registro, $precio_membresia,
 
         $mail->Body = "
             <h2>¡Hola " . htmlspecialchars($nombre) . " " . htmlspecialchars($apellido) . "! 👋</h2>
-            <p>¡Gracias por registrarte en <b>Gimnasio JVCenter</b>!</p>
-            <p><b>Se registró el día:</b> " . htmlspecialchars($registro) . "</p>
+            <p>¡Gracias por registrarte en <b>Gimnasio JV</b>!</p>
+            <p><b>Fecha de Registro:</b> " . htmlspecialchars($registro) . "</p>
             <p><b>Fecha de Pago:</b> $fechaPago</p>
             <p><b>Fecha de Vencimiento:</b> $fechaVencimiento</p>
             <hr>
             $detalle_promocion
             <p><b>Total pagado:</b> $" . number_format($precio_final, 2) . "</p>
             <br>
-            <p>💪 Mantente motivado y sigue entrenando fuerte.</p>
-            <p>¡Nos vemos en el gimnasio! 🚀</p>
+            <p>💪 ¡Sigue entrenando fuerte y mantente motivado!</p>
+            <p>Nos vemos en el gimnasio. 🚀</p>
         ";
 
         $mail->send();
+        echo "<p style='color: lime;'>✅ Correo enviado correctamente a $correo</p>";
         return true;
+
     } catch (Exception $e) {
-        // MOSTRAR el error en pantalla para debug
-        echo "Error de correo: " . $mail->ErrorInfo;
+        echo "<p style='color: red;'>❌ Error al enviar correo: " . $mail->ErrorInfo . "</p>";
         error_log("Error al enviar correo: " . $mail->ErrorInfo);
         return false;
     }
 }
+        
+      
 ?>
 
 <!DOCTYPE html>

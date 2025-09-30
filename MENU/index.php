@@ -588,43 +588,42 @@ if (campoNombreMembresia) {
     }
 
     function calcularPrecio() {
-      const membresiaSelect = document.getElementById('membresiaSelect');
-      const promocionSelect = document.getElementById('promocionSelect');
-      const calculator = document.getElementById('priceCalculator');
-      const precioOriginal = document.getElementById('precioOriginal');
-      const descuentoInfo = document.getElementById('descuentoInfo');
-      const precioFinal = document.getElementById('precioFinal');
+  const membresiaSelect = document.getElementById('membresiaSelect');
+  const promocionSelect = document.getElementById('promocionSelect');
+  const calculator = document.getElementById('priceCalculator');
+  const precioOriginal = document.getElementById('precioOriginal');
+  const descuentoInfo = document.getElementById('descuentoInfo');
+  const precioFinal = document.getElementById('precioFinal');
 
-      const membresiaSeleccionada = membresiaSelect.options[membresiaSelect.selectedIndex];
-      const promocionSeleccionada = promocionSelect.options[promocionSelect.selectedIndex];
+  const membresiaSeleccionada = membresiaSelect.options[membresiaSelect.selectedIndex];
+  const promocionSeleccionada = promocionSelect.options[promocionSelect.selectedIndex];
 
-      if (membresiaSeleccionada.value) {
-        const precioMembresia = parseFloat(membresiaSeleccionada.getAttribute('data-precio') || 0);
-        let descuento = 0;
-        let nombrePromocion = '';
+  if (membresiaSeleccionada && membresiaSeleccionada.value) {
+    const precioMembresia = parseFloat(membresiaSeleccionada.getAttribute('data-precio') || 0);
+    let descuento = 0;
+    let nombrePromocion = '';
 
-        if (promocionSeleccionada.value && !promocionSeleccionada.disabled) {
-          descuento = parseFloat(promocionSeleccionada.getAttribute('data-precio') || 0);
-          nombrePromocion = promocionSeleccionada.text.split(' - ')[0];
-        }
-
-        const total = Math.max(0, precioMembresia - descuento);
-
-        precioOriginal.textContent = `Precio de Membresía: $${precioMembresia.toFixed(2)}`;
-        
-        if (descuento > 0) {
-          descuentoInfo.innerHTML = `Descuento aplicado (${nombrePromocion}): -$${descuento.toFixed(2)}`;
-          precioFinal.textContent = `Total a pagar: $${total.toFixed(2)}`;
-        } else {
-          descuentoInfo.textContent = '';
-          precioFinal.textContent = `Total a pagar: $${total.toFixed(2)}`;
-        }
-
-        calculator.style.display = 'block';
-      } else {
-        calculator.style.display = 'none';
-      }
+    if (promocionSeleccionada && promocionSeleccionada.value && !promocionSeleccionada.disabled) {
+      const precioPromocion = parseFloat(promocionSeleccionada.getAttribute('data-precio') || 0);
+      descuento = precioMembresia - precioPromocion;
+      nombrePromocion = promocionSeleccionada.textContent.split(' - ')[0];
     }
+
+    precioOriginal.textContent = `Precio Original: $${precioMembresia.toFixed(2)}`;
+
+    if (descuento > 0) {
+      descuentoInfo.textContent = `Descuento con promoción "${nombrePromocion}": $${descuento.toFixed(2)}`;
+      precioFinal.textContent = `Precio Final: $${(precioMembresia - descuento).toFixed(2)}`;
+    } else {
+      descuentoInfo.textContent = '';
+      precioFinal.textContent = `Precio Final: $${precioMembresia.toFixed(2)}`;
+    }
+
+    calculator.style.display = 'block';
+  } else {
+    calculator.style.display = 'none';
+  }
+}
 
     window.addEventListener('load', validarPromociones);
   </script>
