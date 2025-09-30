@@ -18,10 +18,11 @@ $sql = "SELECT
            c.Nombres AS NombreCliente,
            c.Telefono,
            m.nom AS NombreMembresia,
-           m.Fecha_Fin
+           c.Fecha_Fin
         FROM Clientes c
         LEFT JOIN Membresias m ON c.membresia = m.codigo
-        ORDER BY m.Fecha_Fin ASC";
+        ORDER BY c.Fecha_Fin ASC";
+
 
 $result = $conn->query($sql);
 

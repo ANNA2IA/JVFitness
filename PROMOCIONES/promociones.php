@@ -181,7 +181,7 @@ $conexion->close();
     <div class="container">
         <h1>Resultado</h1>
         <div class="message"><?php echo $mensaje; ?></div>
-        <a href="../MENU/index.php" class="btn">VOLVER</a>
+        <a onclick="history.back()" class="btn">VOLVER</a>
 
         <h2>Promociones Registradas</h2>
         <table>
