@@ -16,7 +16,11 @@ if ($conexion->connect_error) {
 }
 
 $mensaje = "";
-$resultado_clientes = $conexion->query("SELECT c.*, m.nom as nombre_membresia, m.Precio as precio_membresia, p.Nombres as nombre_promocion, p.Precio as precio_promocion FROM Clientes c LEFT JOIN Membresias m ON c.membresia = m.codigo LEFT JOIN Promociones p ON c.promocion = p.codigoP");
+$resultado_clientes = $conexion->query("SELECT c.*, m.nom as nombre_membresia, m.Precio as precio_membresia, 
+                                               p.Nombres as nombre_promocion, p.Precio as precio_promocion 
+                                        FROM Clientes c 
+                                        LEFT JOIN Membresias m ON c.membresia = m.codigo 
+                                        LEFT JOIN Promociones p ON c.promocion = p.codigoP");
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST['tipo'] == 'cliente') {
     $codigoC   = $_POST['codigoC'] ?? '';
@@ -39,20 +43,38 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST['tipo'] == 'cliente') {
             $nombre_membresia = '';
             $es_mensual = false;
             
-            if (!empty($codigoM)) {
-                $stmt_mem = $conexion->prepare("SELECT Precio, nom FROM Membresias WHERE codigo = ?");
-                $stmt_mem->bind_param("s", $codigoM);
-                $stmt_mem->execute();
-                $resultado_mem = $stmt_mem->get_result();
-                if ($row_mem = $resultado_mem->fetch_assoc()) {
-                    $precio_membresia = floatval($row_mem['Precio']);
-                    $nombre_membresia = $row_mem['nom'];
-                    $es_mensual = stripos($nombre_membresia, 'mensualidad') !== false;
-                    // Calcular fecha fin (30 días desde la fecha de registro)
-                    $fecha_fin_membresia = date('Y-m-d', strtotime($registro . ' +30 days'));
-                }
-                $stmt_mem->close();
-            }
+     // Calcular fecha fin según el tipo de membresía
+// Calcular fecha fin según el tipo de membresía
+if (!empty($codigoM)) {
+    $stmt_mem = $conexion->prepare("SELECT Precio, nom FROM Membresias WHERE codigo = ?");
+    $stmt_mem->bind_param("s", $codigoM);
+    $stmt_mem->execute();
+    $resultado_mem = $stmt_mem->get_result();
+    if ($row_mem = $resultado_mem->fetch_assoc()) {
+        $precio_membresia = floatval($row_mem['Precio']);
+        $nombre_membresia = strtolower($row_mem['nom']); // lo pasamos a minúsculas
+        $es_mensual = stripos($nombre_membresia, 'mensualidad') !== false;
+
+        // Calcular días según el nombre de la membresía
+        if (strpos($nombre_membresia, "dia") !== false) {
+            $fecha_fin_membresia = date('Y-m-d', strtotime($registro . ' +1 day'));
+        } elseif (strpos($nombre_membresia, "semana") !== false) {
+            $fecha_fin_membresia = date('Y-m-d', strtotime($registro . ' +7 days'));
+        } elseif (strpos($nombre_membresia, "quincenal") !== false) {
+            $fecha_fin_membresia = date('Y-m-d', strtotime($registro . ' +15 days'));
+        } elseif (strpos($nombre_membresia, "mes") !== false || strpos($nombre_membresia, "mensual") !== false) {
+            $fecha_fin_membresia = date('Y-m-d', strtotime($registro . ' +30 days'));
+        } elseif (strpos($nombre_membresia, "año") !== false || strpos($nombre_membresia, "anual") !== false) {
+            $fecha_fin_membresia = date('Y-m-d', strtotime($registro . ' +365 days'));
+        } else {
+            // Por defecto 30 días si no se encuentra coincidencia
+            $fecha_fin_membresia = date('Y-m-d', strtotime($registro . ' +30 days'));
+        }
+    }
+    $stmt_mem->close();
+}
+
+
 
             // Obtener datos de la promoción seleccionada (solo si es membresía mensual)
             $descuento_promocion = 0;
@@ -76,18 +98,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST['tipo'] == 'cliente') {
             // Calcular precio final
             $precio_final = $precio_membresia - $descuento_promocion;
             $precio_final = max(0, $precio_final); // No puede ser negativo
-
-            // Actualizar la fecha fin de la membresía
-            if (!empty($codigoM) && $fecha_fin_membresia) {
-                $stmt_update_mem = $conexion->prepare("UPDATE Membresias SET Fecha_Fin = ? WHERE codigo = ?");
-                $stmt_update_mem->bind_param("ss", $fecha_fin_membresia, $codigoM);
-                $stmt_update_mem->execute();
-                $stmt_update_mem->close();
-            }
-
-            // Insertar cliente
-            $stmt = $conexion->prepare("INSERT INTO Clientes (codigoC, Nombres, Apellidos, Correo, Telefono, Registro, membresia, promocion) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("ssssssss", $codigoC, $nombres, $apellidos, $correo, $telefono, $registro, $codigoM, $codigoP);
+             
+            // Insertar cliente con Fecha_Fin
+            $stmt = $conexion->prepare("INSERT INTO Clientes 
+                (codigoC, Nombres, Apellidos, Correo, Telefono, Registro, membresia, promocion, Fecha_Fin) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssssssss", 
+                $codigoC, 
+                $nombres, 
+                $apellidos, 
+                $correo, 
+                $telefono, 
+                $registro, 
+                $codigoM, 
+                $codigoP, 
+                $fecha_fin_membresia
+            );
             
             if ($stmt->execute()) {
                 $mensaje_detalle = "";
@@ -115,7 +141,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST['tipo'] == 'cliente') {
         if ($codigoC == "" || $nombres == "") {
             $mensaje = "⚠️ Debes ingresar el Código y los datos a modificar.";
         } else {
-            $stmt = $conexion->prepare("UPDATE Clientes SET Nombres=?, Apellidos=?, Correo=?, Telefono=?, Registro=?, membresia=?, promocion=? WHERE codigoC=?");
+            $stmt = $conexion->prepare("UPDATE Clientes 
+                SET Nombres=?, Apellidos=?, Correo=?, Telefono=?, Registro=?, membresia=?, promocion=? 
+                WHERE codigoC=?");
             $stmt->bind_param("ssssssss", $nombres, $apellidos, $correo, $telefono, $registro, $codigoM, $codigoP, $codigoC);
             $mensaje = ($stmt->execute()) 
                 ? "✅ Cliente modificado correctamente." 
@@ -148,7 +176,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST['tipo'] == 'cliente') {
         if ($codigoC == "" && $nombres == "") {
             $mensaje = "⚠️ Ingresa el Código o el Nombre para realizar la búsqueda.";
         } else {
-            $stmt = $conexion->prepare("SELECT c.*, m.nom as nombre_membresia, p.Nombres as nombre_promocion FROM Clientes c LEFT JOIN Membresias m ON c.membresia = m.codigo LEFT JOIN Promociones p ON c.promocion = p.codigoP WHERE c.codigoC=? OR c.Nombres LIKE ?");
+            $stmt = $conexion->prepare("SELECT c.*, m.nom as nombre_membresia, p.Nombres as nombre_promocion 
+                                        FROM Clientes c 
+                                        LEFT JOIN Membresias m ON c.membresia = m.codigo 
+                                        LEFT JOIN Promociones p ON c.promocion = p.codigoP 
+                                        WHERE c.codigoC=? OR c.Nombres LIKE ?");
             $busqueda_nombre = "%$nombres%";
             $stmt->bind_param("ss", $codigoC, $busqueda_nombre);
             $stmt->execute();
@@ -160,6 +192,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST['tipo'] == 'cliente') {
                             Correo: " . $row['Correo'] . "<br>
                             Teléfono: " . $row['Telefono'] . "<br>
                             Registro: " . $row['Registro'] . "<br>
+                            Fecha Fin: " . $row['Fecha_Fin'] . "<br>
                             Membresía: " . ($row['nombre_membresia'] ?? 'N/A') . "<br>
                             Promoción: " . ($row['nombre_promocion'] ?? 'N/A');
             } else {
@@ -170,10 +203,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST['tipo'] == 'cliente') {
     }
 
     // Refrescar tabla
-    $resultado_clientes = $conexion->query("SELECT c.*, m.nom as nombre_membresia, m.Precio as precio_membresia, p.Nombres as nombre_promocion, p.Precio as precio_promocion FROM Clientes c LEFT JOIN Membresias m ON c.membresia = m.codigo LEFT JOIN Promociones p ON c.promocion = p.codigoP");
+    $resultado_clientes = $conexion->query("SELECT c.*, m.nom as nombre_membresia, m.Precio as precio_membresia, 
+                                                   p.Nombres as nombre_promocion, p.Precio as precio_promocion 
+                                            FROM Clientes c 
+                                            LEFT JOIN Membresias m ON c.membresia = m.codigo 
+                                            LEFT JOIN Promociones p ON c.promocion = p.codigoP");
 }
 
 $conexion->close();
+
+
 
 // ================== FUNCION DE ENVIO DE CORREO ==================
 function enviarRecibo($correo, $nombre, $apellido, $registro, $precio_membresia, $descuento, $precio_final, $nombre_promocion) {
@@ -181,7 +220,7 @@ function enviarRecibo($correo, $nombre, $apellido, $registro, $precio_membresia,
 
     try {
         // MOSTRAR DEBUG SMTP EN PANTALLA
-        $mail->SMTPDebug = 2;
+        $mail->SMTPDebug = 0;
         $mail->Debugoutput = 'html';
 
         // CONFIGURACIÓN SMTP
@@ -229,7 +268,6 @@ function enviarRecibo($correo, $nombre, $apellido, $registro, $precio_membresia,
         ";
 
         $mail->send();
-        echo "<p style='color: lime;'>✅ Correo enviado correctamente a $correo</p>";
         return true;
 
     } catch (Exception $e) {
@@ -329,7 +367,7 @@ function enviarRecibo($correo, $nombre, $apellido, $registro, $precio_membresia,
     <div class="container">
         <h1>Resultado</h1>
         <div class="message"><?php echo $mensaje; ?></div>
-        <a href="../MENU/index.php" class="btn">VOLVER</a>
+        <a onclick="history.back()" class="btn">VOLVER</a>
 
         <h2>Clientes Registrados</h2>
         <table>
