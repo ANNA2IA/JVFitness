@@ -22,6 +22,8 @@ CREATE TABLE Clientes (
 
 ALTER TABLE Clientes ADD COLUMN membresia VARCHAR(50);
 ALTER TABLE Clientes ADD COLUMN promocion VARCHAR(5);
+ALTER TABLE Clientes ADD COLUMN Fecha_Fin DATE NULL;
+
 
 
 CREATE TABLE Promociones (
