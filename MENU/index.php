@@ -530,8 +530,47 @@ $conn->close();
       document.getElementById('clientes-status-section').style.display = 'block';
       validarPromociones();
       agregarValidaciones();
+        configurarValidacionFecha();
+        
     });
-
+function configurarValidacionFecha() {
+  const campoFecha = document.querySelector('input[name="Registro"]');
+  
+  if (campoFecha) {
+    const hoy = new Date().toISOString().split('T')[0];
+    
+    campoFecha.setAttribute('min', hoy);
+    
+    if (!campoFecha.value) {
+      campoFecha.value = hoy;
+    }
+    
+    campoFecha.addEventListener('change', function() {
+      const fechaSeleccionada = new Date(this.value);
+      const fechaActual = new Date(hoy);
+      
+      if (fechaSeleccionada < fechaActual) {
+        alert('⚠️ No puedes seleccionar una fecha anterior a hoy.');
+        this.value = hoy;
+      }
+    });
+    
+    const formulario = campoFecha.closest('form');
+    if (formulario) {
+      formulario.addEventListener('submit', function(e) {
+        const fechaSeleccionada = new Date(campoFecha.value);
+        const fechaActual = new Date(hoy);
+        
+        if (fechaSeleccionada < fechaActual) {
+          e.preventDefault();
+          alert('⚠️ No puedes registrar un cliente con una fecha anterior a hoy.');
+          campoFecha.focus();
+          return false;
+        }
+      });
+    }
+  }
+}
     function agregarValidaciones() {
       const camposTexto = document.querySelectorAll('input[name="Nombres"], input[name="Apellidos"]');
       camposTexto.forEach(campo => {
